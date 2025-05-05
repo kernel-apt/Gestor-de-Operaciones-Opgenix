@@ -1,0 +1,50 @@
+[33mcommit a55ece3154719e3162b542f94ae1ee342353196f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: David Guzman <David.Guzman.Martinez@alumnos.uacm.edu.mx>
+Date:   Mon Nov 18 01:41:08 2024 -0600
+
+    Agregando archivos no rastreados
+
+[33mcommit 67b81f7f4ee32230166b98bcf5f55e9752e7fad3[m
+Author: David Guzman <David.Guzman.Martinez@alumnos.uacm.edu.mx>
+Date:   Mon Nov 18 01:37:04 2024 -0600
+
+    primer commit
+
+[33mcommit f202735cc8aa0f9dca6a5551b9522c6888e822d9[m
+Author: David Guzman <David.Guzman.Martinez@alumnos.uacm.edu.mx>
+Date:   Mon Nov 18 00:37:05 2024 -0600
+
+    Modificacion en la insercion de datos. Se modifica el metodo
+    insertaHorario para poder anexar los parametros usuario, razon los
+    cuales son necesarios para insertar los valores en las tablas horario y
+    detalle_reserva de la base de datos.
+    Modificado:
+    Clase: Insert Metodo: insertarHorario
+    Clase: TablaController metodo: CrearReserva
+    Clase: FXMLController Metodo: Seleccionado
+
+[33mcommit d68217926d7d950a191ce208ff2ee2217fb1b8c4[m
+Author: David Guzman <David.Guzman.Martinez@alumnos.uacm.edu.mx>
+Date:   Thu Nov 14 13:04:18 2024 -0600
+
+    Se completo el sistema de notificaciones en donde muestra
+    las reservas creadas por el usuario.
+    Modificado=
+    ContenidoNotificaciones:
+    Notificaciones.fxml
+    NotificacionesController
+
+[33mcommit 841336e7a9c4aad7352d15a3d7e54d139301c435[m
+Author: David Guzman <David.Guzman.Martinez@alumnos.uacm.edu.mx>
+Date:   Thu Nov 14 12:45:57 2024 -0600
+
+    Primera prueba de notificaciones:
+    Se creo Notificaciones.fxml, ContenidoNotificacion
+    y NotificacionesController
+
+[33mcommit 8af4209f643ca188578232b033e45e3911d6ab5c[m
+Author: David Guzman <David.Guzman.Martinez@alumnos.uacm.edu.mx>
+Date:   Thu Nov 14 10:39:48 2024 -0600
+
+    Se modifica la pantalla principal, se cambia el menu por uno más
+    dinamico. Se eliminan todos los fxml de selección.
