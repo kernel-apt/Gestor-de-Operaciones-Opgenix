@@ -18,9 +18,8 @@
          <children>
             <MenuBar prefHeight="25.0" prefWidth="844.0">
               <menus>
-                <Menu mnemonicParsing="false" text="File">
+                <Menu mnemonicParsing="false" text="Operaciones">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="Close" />
                       <MenuItem mnemonicParsing="false" text="Crear operaciones" />
                         <MenuItem mnemonicParsing="false" text="Editar operaciones" />
                         <MenuItem mnemonicParsing="false" text="Eliminar operaciones" />
@@ -33,6 +32,7 @@
                             <MenuItem mnemonicParsing="false" text="Asociar tarea" />
                           </items>
                         </Menu>
+                    <MenuItem mnemonicParsing="false" text="Close" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
@@ -40,7 +40,7 @@
                     <MenuItem mnemonicParsing="false" text="Delete" />
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Help">
+                <Menu mnemonicParsing="false" text="AcercaDe...">
                   <items>
                     <MenuItem mnemonicParsing="false" text="Acerca de..." />
                   </items>
@@ -56,11 +56,11 @@
       <Pane prefHeight="39.0" prefWidth="760.0" style="-fx-background-color: #F0EBF7;" BorderPane.alignment="CENTER">
          <children>
             <Label layoutX="41.0" layoutY="11.0" text="Operaciones activas:" />
-            <TextField layoutX="157.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
+            <TextField fx:id="tf_OperacionesActivas" layoutX="157.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
             <Label layoutX="211.0" layoutY="11.0" text="de:" />
-            <TextField layoutX="234.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
+            <TextField fx:id="tf_TotalOperaciones" layoutX="234.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
             <Label layoutX="879.0" layoutY="11.0" text="Tareas en ejecución:" />
-            <TextField layoutX="999.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
+            <TextField fx:id="tf_TareasEjecucion" layoutX="999.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
          </children>
       </Pane>
    </bottom>
@@ -69,12 +69,12 @@
          <children>
             <ScrollPane prefHeight="315.0" prefWidth="217.0">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="316.0" prefWidth="216.0" />
+                <AnchorPane fx:id="ap_Operaciones" minHeight="0.0" minWidth="0.0" prefHeight="316.0" prefWidth="216.0" />
               </content>
             </ScrollPane>
             <ScrollPane prefHeight="315.0" prefWidth="217.0">
                <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="315.0" prefWidth="203.0" />
+                  <AnchorPane fx:id="ap_TareasDeOperaciones" minHeight="0.0" minWidth="0.0" prefHeight="315.0" prefWidth="203.0" />
                </content>
             </ScrollPane>
          </children></VBox>
