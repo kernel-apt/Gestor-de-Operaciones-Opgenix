@@ -7,13 +7,12 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
-<TitledPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+<TitledPane alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="RIGHT_TO_LEFT" prefHeight="130.0" prefWidth="600.0" text="Tarea: " textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
    <content>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0">
+      <AnchorPane prefHeight="88.0" prefWidth="598.0">
          <children>
-            <Label layoutX="35.0" layoutY="21.0" text="Tarea:" />
-            <CheckBox layoutX="450.0" layoutY="22.0" mnemonicParsing="false" text="CheckBox" />
+            <Label layoutX="427.0" layoutY="26.0" prefHeight="15.0" prefWidth="45.0" text="Acción:" />
+            <CheckBox layoutX="121.0" layoutY="22.0" mnemonicParsing="false" text="CheckBox" />
             <ButtonBar layoutX="178.0" layoutY="48.0" prefHeight="40.0" prefWidth="200.0">
                <buttons>
                   <Button mnemonicParsing="false" text="Button" />

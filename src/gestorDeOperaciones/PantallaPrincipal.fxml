@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -16,28 +17,18 @@
    <top>
       <FlowPane prefHeight="27.0" prefWidth="760.0" style="-fx-background-color: #F0EBF7;" BorderPane.alignment="CENTER">
          <children>
-            <MenuBar prefHeight="25.0" prefWidth="844.0">
+            <MenuBar prefHeight="25.0" prefWidth="1026.0">
               <menus>
                 <Menu mnemonicParsing="false" text="Operaciones">
                   <items>
                       <MenuItem mnemonicParsing="false" text="Crear operaciones" />
                         <MenuItem mnemonicParsing="false" text="Editar operaciones" />
-                        <MenuItem mnemonicParsing="false" text="Eliminar operaciones" />
-                        <MenuItem mnemonicParsing="false" text="Ver todas las operaciones" />
                         <Menu mnemonicParsing="false" text="Tareas">
                           <items>
                             <MenuItem mnemonicParsing="false" text="Crear Tarea" />
                             <MenuItem mnemonicParsing="false" text="Editar Tarea" />
-                              <MenuItem mnemonicParsing="false" text="Eliminar Tarea" />
-                            <MenuItem mnemonicParsing="false" text="Asociar tarea" />
                           </items>
                         </Menu>
-                    <MenuItem mnemonicParsing="false" text="Close" />
-                  </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Edit">
-                  <items>
-                    <MenuItem mnemonicParsing="false" text="Delete" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="AcercaDe...">
@@ -47,8 +38,7 @@
                 </Menu>
               </menus>
             </MenuBar>
-            <Label text="   Usuario:    " />
-            <TextField fx:id="txf_Usuario" editable="false" prefHeight="25.0" prefWidth="147.0" />
+            <Button mnemonicParsing="false" text="Cerrar" />
          </children>
       </FlowPane>
    </top>
