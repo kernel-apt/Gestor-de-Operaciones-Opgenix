@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TextArea layoutX="359.0" layoutY="61.0" prefHeight="119.0" prefWidth="177.0" text="Guzman Martinez David &#10;Mendieta Rodriguez Kenya &#10;Cruz Sánchez Manuel&#10;Zambrano Osorno Sarai&#10;Díaz Dorado Rosa Isela&#10;Jose Luis Catillo Peña " />
+      <Label layoutX="359.0" layoutY="44.0" text="Integrantes: " />
+      <TextArea layoutX="359.0" layoutY="209.0" prefHeight="150.0" prefWidth="177.0" text="Producto:&#10;Gestor de Operaciones&#10;&#10;Version: &#10;2.0&#10;&#10;Fecha de lanzamiento:&#10;30-04-2025" />
+      <Label layoutX="359.0" layoutY="192.0" text="Detalles del producto:" />
+      <TextArea layoutX="63.0" layoutY="284.0" prefHeight="70.0" prefWidth="250.0" text="Por añadir" />
+      <Label layoutX="63.0" layoutY="259.0" text="Metodos de Contacto:" />
+      <ImageView fitHeight="203.0" fitWidth="276.0" layoutX="86.0" layoutY="44.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../image/perfil.png" />
+         </image>
+      </ImageView>
+   </children>
+</Pane>

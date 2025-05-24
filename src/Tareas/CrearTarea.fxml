@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitMenuButton?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="726.0" maxWidth="769.0" minHeight="526.0" minWidth="749.0" prefHeight="526.0" prefWidth="749.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Tareas.CrearTareaController">
+   <children>
+      <Label layoutX="21.0" layoutY="13.0" text="Nombre de la tarea:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="57.0" layoutY="54.0" text="Descripcion:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="59.0" layoutY="99.0" text="Instruccion:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="52.0" layoutY="146.0" text="Dependencia:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <TableView fx:id="tbv_Instrucciones" layoutX="7.0" layoutY="185.0" prefHeight="246.0" prefWidth="736.0">
+         <columns>
+            <TableColumn fx:id="tbc_Instrucciones" prefWidth="303.0" text="Instrucciones" />
+            <TableColumn fx:id="tbc_Dependencias" prefWidth="392.0" text="Dependencias" />
+         </columns>
+      </TableView>
+      <Button fx:id="btn_AgregarDependencia" layoutX="658.0" layoutY="144.0" mnemonicParsing="false" onAction="#AgregarDependencia" prefHeight="25.0" prefWidth="34.0" text="+" />
+      <Button fx:id="btn_Guardar" layoutX="518.0" layoutY="480.0" mnemonicParsing="false" onAction="#Guardar" text="Guardar cambios" />
+      <Button fx:id="btn_Descartar" layoutX="637.0" layoutY="480.0" mnemonicParsing="false" onAction="#Descartar" prefHeight="25.0" prefWidth="59.0" text="Salir" />
+      <TextField fx:id="tf_NombreTarea" layoutX="150.0" layoutY="10.0" prefHeight="25.0" prefWidth="576.0" />
+      <TextField fx:id="tf_Descripcion" layoutX="150.0" layoutY="51.0" prefHeight="25.0" prefWidth="576.0" />
+      <TextField fx:id="tf_NombreInstruccion" layoutX="150.0" layoutY="96.0" prefHeight="25.0" prefWidth="487.0" />
+      <CheckBox fx:id="cb_Reanudar" layoutX="303.0" layoutY="442.0" mnemonicParsing="false" text="Reanudar" />
+      <SplitMenuButton fx:id="spm_Tareas" layoutX="150.0" layoutY="144.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="495.0" text="Tareas">
+         <items>
+            <MenuItem mnemonicParsing="false" text="Action 1" />
+            <MenuItem mnemonicParsing="false" text="Action 2" />
+         </items>
+      </SplitMenuButton>
+      <Button fx:id="btn_DescartarDependencia" layoutX="706.0" layoutY="144.0" mnemonicParsing="false" onAction="#DescartarDependencia" prefHeight="25.0" prefWidth="34.0" text="-" />
+      <CheckBox fx:id="cb_Pausa" layoutX="207.0" layoutY="442.0" mnemonicParsing="false" text="Pausa" />
+      <Label layoutX="35.0" layoutY="440.0" text="Estados de la tarea:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <CheckBox fx:id="cb_Reiniciar" layoutX="413.0" layoutY="442.0" mnemonicParsing="false" text="Reiniciar" />
+      <Button fx:id="btn_AgregarInstruccion" layoutX="658.0" layoutY="96.0" mnemonicParsing="false" onAction="#AgregarInstruccion" prefHeight="25.0" prefWidth="34.0" text="+" />
+      <Button fx:id="btn_DescartarInstruccion" layoutX="706.0" layoutY="97.0" mnemonicParsing="false" onAction="#DescartarInstruccion" prefHeight="25.0" prefWidth="34.0" text="-" />
+   </children>
+</AnchorPane>
