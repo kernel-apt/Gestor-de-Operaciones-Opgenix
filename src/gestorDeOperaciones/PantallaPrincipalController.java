@@ -41,7 +41,6 @@ public class PantallaPrincipalController {
     public void Menu(ActionEvent event) {
         MenuItem item = (MenuItem) event.getSource();
         String id = item.getId();
-        System.out.println("\n El id es: " + id);
 
         CrearPane crear = new CrearPane();
         String text = crear.Abrir(id);

@@ -119,7 +119,9 @@ public class CrearTareaController {
         if (!nombreDependencia.isEmpty() && !nombreDependencia.equals("Tareas")) {
             FilaDependencia nueva = new FilaDependencia(nombreDependencia);
             filasDependencia.add(nueva);
-            tf_NombreInstruccion.clear();
+            spm_Tareas.setText("Tareas");
+            btn_AgregarDependencia.setDisable(true);
+            btn_DescartarDependencia.setDisable(true);
         }
     }
 
@@ -138,7 +140,10 @@ public class CrearTareaController {
         if (seleccionado != null) {
             filasDependencia.remove(seleccionado);
         } else {
-            System.out.println("No hay ningún elemento seleccionado para eliminar.");
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No hay ningún elemento seleccionado.");
         }
     }
 
@@ -148,13 +153,17 @@ public class CrearTareaController {
         if (seleccionado != null) {
             filasInstruccion.remove(seleccionado);
         } else {
-            System.out.println("No hay ningún elemento seleccionado para eliminar.");
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No hay ningún elemento seleccionado.");
         }
     }
 
     @FXML
     void Guardar(ActionEvent event) {
-         Tareas tarea=null;
+        Tareas tarea = null;
+        AgregarFXML validar = null;
         String nombreTarea = tf_NombreTarea.getText();
         String descripcion = tf_Descripcion.getText();
         Boolean valorPausa = cb_Pausa.isSelected();
@@ -168,10 +177,12 @@ public class CrearTareaController {
         String cadenaDependencias = filasDependencia.stream()
                 .map(fila -> fila.getDependencia())
                 .collect(Collectors.joining(","));
-        if (validarCampos(nombreTarea, descripcion, cadenaInstrucciones, cadenaDependencias)) {
+        boolean validacion = validar.validarCampos(nombreTarea, descripcion, cadenaInstrucciones, cadenaDependencias);
+
+        if (validacion) {
             tarea = new Tareas(nombreTarea, descripcion, valorPausa, valorReanudar, valorReiniciar, cadenaDependencias, cadenaInstrucciones);
         }
-         ConsultasSQL crearTarea = new ConsultasSQL();
+        ConsultasSQL crearTarea = new ConsultasSQL();
         Boolean creado = crearTarea.Guardar(tarea);
         if (creado) {
             Alert alerta = new Alert(Alert.AlertType.INFORMATION);
@@ -199,40 +210,6 @@ public class CrearTareaController {
             cb_Reanudar.setDisable(true);
             cb_Reiniciar.setDisable(true);
         }
-    }
-
-    public boolean validarCampos(String nombreTarea, String descripcion,
-            String cadenaInstrucciones, String cadenaDependencias) {
-        if (nombreTarea == null || nombreTarea.trim().isEmpty()) {
-            mostrarAlerta("Error de validación", "El nombre de la tarea es obligatorio.");
-            return false;
-        }
-
-        if (descripcion == null || descripcion.trim().isEmpty()) {
-            mostrarAlerta("Error de validación", "La descripción es obligatoria.");
-            return false;
-        }
-
-        if (cadenaInstrucciones == null || cadenaInstrucciones.trim().isEmpty()) {
-            mostrarAlerta("Error de validación", "Debe haber al menos una instrucción.");
-            return false;
-        }
-
-        if (cadenaDependencias == null || cadenaDependencias.trim().isEmpty()) {
-            mostrarAlerta("Error de validación", "Debe haber al menos una dependencia.");
-            return false;
-        }
-
-        // Si llegamos aquí, todos los campos son válidos
-        return true;
-    }
-
-    private void mostrarAlerta(String titulo, String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.ERROR);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 
 }

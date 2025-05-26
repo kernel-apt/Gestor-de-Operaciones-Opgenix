@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
@@ -19,19 +20,16 @@
       <TextArea layoutX="171.0" layoutY="677.0" prefHeight="54.0" prefWidth="655.0" visible="false" />
       <TextField fx:id="tf_Salidas" layoutX="171.0" layoutY="550.0" prefHeight="25.0" prefWidth="585.0" visible="false" />
       <Button fx:id="btn_Guardar" layoutX="661.0" layoutY="469.0" mnemonicParsing="false" onAction="#Guardar" prefHeight="24.0" prefWidth="77.0" text="Guardar" />
-      <Button fx:id="btn_Asociar" layoutX="573.0" layoutY="469.0" mnemonicParsing="false" onAction="#Asociar" prefHeight="26.0" prefWidth="77.0" text="Asociar" />
       <TextField fx:id="tf_NombreEntrada" layoutX="171.0" layoutY="43.0" prefHeight="25.0" prefWidth="505.0" />
       <TextField layoutX="171.0" layoutY="82.0" />
-      <TableView layoutX="106.0" layoutY="116.0" prefHeight="334.0" prefWidth="299.0">
+      <TableView fx:id="tbv_Dependencias" layoutX="106.0" layoutY="185.0" prefHeight="265.0" prefWidth="632.0">
          <columns>
-            <TableColumn prefWidth="298.0" text="Tareas existentes" />
-         </columns>
-      </TableView>
-      <TableView layoutX="439.0" layoutY="116.0" prefHeight="334.0" prefWidth="299.0">
-         <columns>
-            <TableColumn prefWidth="298.0" text="Tareas asociadas" />
+            <TableColumn fx:id="tbc_Dependencias" prefWidth="629.0" text="Tareas asociadas" />
          </columns>
       </TableView>
       <Button fx:id="btn_Salir" layoutX="709.0" layoutY="14.0" mnemonicParsing="false" onAction="#Salir" prefHeight="25.0" prefWidth="58.0" text="Salir" />
+      <SplitMenuButton fx:id="spm_Tareas" layoutX="171.0" layoutY="119.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="495.0" text="Tareas" />
+      <Button fx:id="btn_AgregarDependencia" layoutX="683.0" layoutY="119.0" mnemonicParsing="false" onAction="#AgregarDependencia" prefHeight="25.0" prefWidth="34.0" text="+" />
+      <Button fx:id="btn_DescartarDependencia" layoutX="722.0" layoutY="119.0" mnemonicParsing="false" onAction="#DescartarDependencia" prefHeight="25.0" prefWidth="34.0" text="-" />
    </children>
 </AnchorPane>

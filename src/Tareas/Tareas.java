@@ -12,6 +12,26 @@ import javafx.collections.ObservableList;
  * @author parca
  */
 public class Tareas {
+    private int idTarea;
+
+    public Tareas(int idTarea, String nombreTarea, String descripcion, Boolean valorPausa, Boolean valorReanudar, Boolean valorReiniciar, String Dependencia, String Instruccion) {
+        this.idTarea = idTarea;
+        this.nombreTarea = nombreTarea;
+        this.descripcion = descripcion;
+        this.valorPausa = valorPausa;
+        this.valorReanudar = valorReanudar;
+        this.valorReiniciar = valorReiniciar;
+        this.Dependencia = Dependencia;
+        this.Instruccion = Instruccion;
+    }
+
+    public int getIdTarea() {
+        return idTarea;
+    }
+
+    public void setIdTarea(int idTarea) {
+        this.idTarea = idTarea;
+    }
     private String nombreTarea;
     private String descripcion;
     private Boolean valorPausa;
