@@ -42,7 +42,7 @@ public class GestorDeOperaciones extends Application {
             Class.forName("com.mysql.cj.jdbc.Driver"); // Carga el driver de MySQL para establecer conexión
 
             // Establece conexión a la base de datos 'mydatabase'
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/mydatabase?useTimezone=true&serverTimezone=UTC", "root", "Zweihander128");
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/gestiondeoperaciones?useTimezone=true&serverTimezone=UTC", "root", "Zweihander128");
             System.out.println("Conexión exitosa a la base de datos 'mydatabase'"); // Mensaje de éxito al conectar a la base de datos
         } catch (SQLException e) {
             System.err.println("Error en la conexión a MySQL: " + e.getMessage()); // Manejo de errores en caso de fallos en la conexión SQL

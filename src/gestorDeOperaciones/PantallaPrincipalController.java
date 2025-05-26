@@ -45,7 +45,6 @@ public class PantallaPrincipalController {
 
         CrearPane crear = new CrearPane();
         String text = crear.Abrir(id);
-        System.out.println("\n Ruta seleccionada: " + text);
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(text));

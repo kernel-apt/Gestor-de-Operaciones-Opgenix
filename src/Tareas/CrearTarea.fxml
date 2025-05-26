@@ -3,7 +3,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -33,10 +32,9 @@
             <Font size="14.0" />
          </font>
       </Label>
-      <TableView fx:id="tbv_Instrucciones" layoutX="7.0" layoutY="185.0" prefHeight="246.0" prefWidth="736.0">
+      <TableView fx:id="tbv_Instrucciones" layoutX="7.0" layoutY="185.0" prefHeight="246.0" prefWidth="354.0">
          <columns>
-            <TableColumn fx:id="tbc_Instrucciones" prefWidth="303.0" text="Instrucciones" />
-            <TableColumn fx:id="tbc_Dependencias" prefWidth="392.0" text="Dependencias" />
+            <TableColumn fx:id="tbc_Instrucciones" prefWidth="353.0" text="Instrucciones" />
          </columns>
       </TableView>
       <Button fx:id="btn_AgregarDependencia" layoutX="658.0" layoutY="144.0" mnemonicParsing="false" onAction="#AgregarDependencia" prefHeight="25.0" prefWidth="34.0" text="+" />
@@ -45,22 +43,22 @@
       <TextField fx:id="tf_NombreTarea" layoutX="150.0" layoutY="10.0" prefHeight="25.0" prefWidth="576.0" />
       <TextField fx:id="tf_Descripcion" layoutX="150.0" layoutY="51.0" prefHeight="25.0" prefWidth="576.0" />
       <TextField fx:id="tf_NombreInstruccion" layoutX="150.0" layoutY="96.0" prefHeight="25.0" prefWidth="487.0" />
-      <CheckBox fx:id="cb_Reanudar" layoutX="303.0" layoutY="442.0" mnemonicParsing="false" text="Reanudar" />
-      <SplitMenuButton fx:id="spm_Tareas" layoutX="150.0" layoutY="144.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="495.0" text="Tareas">
-         <items>
-            <MenuItem mnemonicParsing="false" text="Action 1" />
-            <MenuItem mnemonicParsing="false" text="Action 2" />
-         </items>
-      </SplitMenuButton>
+      <CheckBox fx:id="cb_Reanudar" disable="true" layoutX="303.0" layoutY="442.0" mnemonicParsing="false" text="Reanudar" />
+      <SplitMenuButton fx:id="spm_Tareas" layoutX="150.0" layoutY="144.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="495.0" text="Tareas" />
       <Button fx:id="btn_DescartarDependencia" layoutX="706.0" layoutY="144.0" mnemonicParsing="false" onAction="#DescartarDependencia" prefHeight="25.0" prefWidth="34.0" text="-" />
-      <CheckBox fx:id="cb_Pausa" layoutX="207.0" layoutY="442.0" mnemonicParsing="false" text="Pausa" />
+      <CheckBox fx:id="cb_Pausa" layoutX="207.0" layoutY="442.0" mnemonicParsing="false" onAction="#Pausa" text="Pausa" />
       <Label layoutX="35.0" layoutY="440.0" text="Estados de la tarea:">
          <font>
             <Font size="14.0" />
          </font>
       </Label>
-      <CheckBox fx:id="cb_Reiniciar" layoutX="413.0" layoutY="442.0" mnemonicParsing="false" text="Reiniciar" />
+      <CheckBox fx:id="cb_Reiniciar" disable="true" layoutX="413.0" layoutY="442.0" mnemonicParsing="false" text="Reiniciar" />
       <Button fx:id="btn_AgregarInstruccion" layoutX="658.0" layoutY="96.0" mnemonicParsing="false" onAction="#AgregarInstruccion" prefHeight="25.0" prefWidth="34.0" text="+" />
       <Button fx:id="btn_DescartarInstruccion" layoutX="706.0" layoutY="97.0" mnemonicParsing="false" onAction="#DescartarInstruccion" prefHeight="25.0" prefWidth="34.0" text="-" />
+      <TableView fx:id="tbv_Dependencias" layoutX="361.0" layoutY="185.0" prefHeight="246.0" prefWidth="369.0">
+         <columns>
+            <TableColumn fx:id="tbc_Dependencias" prefWidth="368.0" text="Dependencias" />
+         </columns>
+      </TableView>
    </children>
 </AnchorPane>

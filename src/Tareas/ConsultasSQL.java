@@ -1,0 +1,106 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package Tareas;
+
+import gestorDeOperaciones.GestorDeOperaciones;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.scene.control.Alert;
+
+/**
+ *
+ * @author parca
+ */
+public class ConsultasSQL {
+
+    Connection con = GestorDeOperaciones.getConnection();
+    private List<String> cadenaTareas = new ArrayList<>();
+    Alert alerta;
+    String nombreTarea;
+    int idTarea;
+    String descripcion;
+    Boolean pausa;
+    Boolean reanudar;
+    Boolean reiniciar;
+    String dependencia;
+    String instruccion;
+
+    public ArrayList<String> ListaTareas() {
+        cadenaTareas.clear();
+        try {
+            if (con != null) {  // Verificar si se ha establecido una conexión.
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery("SELECT Nombre FROM tarea");
+                while (rs.next()) {
+                    nombreTarea = rs.getString("Nombre");
+                    cadenaTareas.add(nombreTarea);
+                }
+            }
+        } catch (SQLException e) {
+            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
+            alerta.showAndWait();
+        }
+        return (ArrayList) cadenaTareas;
+    }
+    
+    public Tareas ConsultaTareas() {
+        Tareas tarea=null;
+        try {
+            if (con != null) {  
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery("SELECT * FROM tarea");
+                while (rs.next()) {
+                    idTarea=rs.getInt("idTarea");
+                    nombreTarea = rs.getString("Nombre");
+                    descripcion=rs.getString("Descripcion");
+                    pausa=rs.getBoolean("Pausa");
+                    reanudar=rs.getBoolean("Reanudar");
+                    reiniciar=rs.getBoolean("Reiniciar");
+                    dependencia=rs.getString("Dependencia");
+                    instruccion=rs.getString("Instruccion");
+                    tarea=new Tareas(idTarea,nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
+                }
+            }
+        } catch (SQLException e) {
+            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
+            alerta.showAndWait();
+        }
+        return tarea;
+    }
+    
+    
+    public boolean Guardar(Tareas tarea) {
+    Boolean creado=false;
+            if (con != null) {
+                String sql = "INSERT INTO tareas (Nombre, Descripcion, Pausa, Reanudar, Reiniciar, Dependencia,Instruccion, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                
+                try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setString(1, tarea.getNombreTarea());
+                    ps.setString(2, tarea.getDescripcion());
+                    ps.setBoolean(3, tarea.getValorPausa());
+                    ps.setBoolean(4, tarea.getValorReanudar());
+                    ps.setBoolean(5, tarea.getValorReiniciar());
+                    ps.setString(6, tarea.getDependencia());
+                    ps.setString(7, tarea.getInstruccion());
+                    ps.setString(8, "Creado");
+                    
+                    
+                    int filasInsertadas = ps.executeUpdate();
+                    if(filasInsertadas!=0){
+                        creado=true;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        return creado;
+    }
+}

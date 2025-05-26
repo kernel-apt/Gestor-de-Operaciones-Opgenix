@@ -1,13 +1,20 @@
 package Tareas;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 public class VisorTareasController {
 
@@ -42,13 +49,22 @@ public class VisorTareasController {
     private SplitMenuButton spm_Tareas;
 
     @FXML
-    private TableColumn<?, ?> tbc_Dependencias;
+    private TableView<FilaInstruccion> tbv_Instrucciones;
 
     @FXML
-    private TableColumn<?, ?> tbc_Instrucciones;
+    private TableView<FilaDependencia> tbv_Dependencias;
 
     @FXML
-    private TableView<?> tbv_Instrucciones;
+    private TableColumn<FilaInstruccion, String> tbc_Instrucciones;
+
+    @FXML
+    private TableColumn<FilaDependencia, String> tbc_Dependencias;
+
+    @FXML
+    private TableView<FilaTareas> tbv_Tareas;
+
+    @FXML
+    private TableColumn<FilaTareas, String> tbc_Tareas;
 
     @FXML
     private TextField tf_Descripcion;
@@ -60,33 +76,198 @@ public class VisorTareasController {
     private TextField tf_NombreTarea;
 
     @FXML
-    void AgregarDependencia(ActionEvent event) {
+    private TextField tf_idTarea;
+    
+    public String nombreInstruccion;
+    public String nombreDependencia;
+    private ObservableList<FilaInstruccion> filasInstruccion = FXCollections.observableArrayList();
+    private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
+    private ObservableList<FilaTareas> filasTarea = FXCollections.observableArrayList();
+    private ArrayList<String> ListaTareas;
 
+    @FXML
+    public void initialize() {
+        tbc_Instrucciones.setCellValueFactory(new PropertyValueFactory<>("instruccion"));
+        tbv_Instrucciones.setItems(filasInstruccion);
+        tbc_Dependencias.setCellValueFactory(new PropertyValueFactory<>("dependencia"));
+        tbv_Dependencias.setItems(filasDependencia);
+
+        tbc_Tareas.setCellValueFactory(new PropertyValueFactory<>("tarea")); // "tarea" es el nombre del atributo en FilaTareas
+        tbv_Tareas.setItems(filasTarea); // Vinculas la tabla con la lista ObservableList
+
+        cargarTareasEnTabla();
+
+        tbv_Tareas.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                cargarDatos(newSelection);
+            }
+        });
+
+        AgregarFXML.cargarTareasEnMenu(spm_Tareas, this::SeleccionarMenuItem);
+        MenuItem primerItem = spm_Tareas.getItems().get(0);
+        String textoMenuItem = primerItem.getText();
+
+        if (textoMenuItem.equals("No hay tareas creadas")) {
+            btn_AgregarDependencia.setDisable(true);
+            btn_DescartarDependencia.setDisable(true);
+        }
+
+    }
+
+    @FXML
+    private void SeleccionarMenuItem(ActionEvent event) {
+        MenuItem fuente = (MenuItem) event.getSource();
+        MenuItem selectedMenuItem = (MenuItem) event.getSource();
+        String texto = selectedMenuItem.getText();
+        spm_Tareas.setText(texto);
     }
 
     @FXML
     void AgregarInstruccion(ActionEvent event) {
+        nombreInstruccion = tf_NombreInstruccion.getText();
+        if (!nombreInstruccion.isEmpty()) {
+            FilaInstruccion nueva = new FilaInstruccion(nombreInstruccion); // Solo instrucción
+            filasInstruccion.add(nueva);
+            tf_NombreInstruccion.clear();
+        }
+    }
 
+    @FXML
+    void AgregarDependencia(ActionEvent event) {
+        nombreDependencia = spm_Tareas.getText();
+        if (!nombreDependencia.isEmpty() && !nombreDependencia.equals("Tareas")) {
+            FilaDependencia nueva = new FilaDependencia(nombreDependencia);
+            filasDependencia.add(nueva);
+            tf_NombreInstruccion.clear();
+        }
     }
 
     @FXML
     void Descartar(ActionEvent event) {
-
+        tf_NombreTarea.setText(null);
+        tf_Descripcion.setText(null);
+        tf_NombreInstruccion.setText(null);
+        filasInstruccion.clear();
+        filasDependencia.clear();
     }
 
     @FXML
     void DescartarDependencia(ActionEvent event) {
-
+        FilaDependencia seleccionado = tbv_Dependencias.getSelectionModel().getSelectedItem();
+        if (seleccionado != null) {
+            filasDependencia.remove(seleccionado);
+        } else {
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No hay ningún elemento seleccionado");
+        }
     }
 
     @FXML
     void DescartarInstruccion(ActionEvent event) {
-
+        FilaInstruccion seleccionado = tbv_Instrucciones.getSelectionModel().getSelectedItem();
+        if (seleccionado != null) {
+            filasInstruccion.remove(seleccionado);
+        } else {
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No hay ningún elemento seleccionado");
+        }
     }
 
     @FXML
     void Guardar(ActionEvent event) {
+        Tareas tarea = null;
+        AgregarFXML validar = null;
+        String nombreTarea = tf_NombreTarea.getText();
+        String descripcion = tf_Descripcion.getText();
+        Boolean valorPausa = cb_Pausa.isSelected();
+        Boolean valorReanudar = cb_Reanudar.isSelected();
+        Boolean valorReiniciar = cb_Reiniciar.isSelected();
 
+        String cadenaInstrucciones = filasInstruccion.stream()
+                .map(fila -> fila.getInstruccion())
+                .collect(Collectors.joining(","));
+
+        String cadenaDependencias = filasDependencia.stream()
+                .map(fila -> fila.getDependencia())
+                .collect(Collectors.joining(","));
+        boolean validacion = validar.validarCampos(nombreTarea, descripcion, cadenaInstrucciones, cadenaDependencias);
+
+        if (validacion) {
+            tarea = new Tareas(nombreTarea, descripcion, valorPausa, valorReanudar, valorReiniciar, cadenaDependencias, cadenaInstrucciones);
+        }
+        ConsultasSQL crearTarea = new ConsultasSQL();
+        Boolean creado = crearTarea.Guardar(tarea);
+        if (creado) {
+            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+            alerta.setTitle("Operación exitosa");
+            alerta.setHeaderText(null);
+            alerta.setContentText("Los datos se han guardado correctamente.");
+        } else {
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No se pudieron guardar los datos.");
+        }
+
+    }
+
+    @FXML
+    void Pausa(ActionEvent event) {
+
+        if (cb_Pausa.isSelected()) {
+            cb_Reanudar.setDisable(false);
+            cb_Reiniciar.setDisable(false);
+        } else {
+            cb_Reanudar.setSelected(false);
+            cb_Reiniciar.setSelected(false);
+            cb_Reanudar.setDisable(true);
+            cb_Reiniciar.setDisable(true);
+        }
+    }
+
+    private void cargarTareasEnTabla() {
+        filasTarea.clear(); // Limpia los datos anteriores
+
+        ConsultasSQL consultas = new ConsultasSQL();
+        ArrayList<String> listaTareas = consultas.ListaTareas();
+
+        if (listaTareas != null && !listaTareas.isEmpty()) {
+            for (String tarea : listaTareas) {
+                filasTarea.add(new FilaTareas(tarea));
+            }
+        } else {
+            filasTarea.add(new FilaTareas("No existen tareas actualmente"));
+
+        }
+    }
+
+    private void cargarDatos(FilaTareas tareaSeleccionada) {
+        ConsultasSQL consultaDetalleTarea = new ConsultasSQL();
+        Tareas tareaConsultada;
+        tareaConsultada = consultaDetalleTarea.ConsultaTareas();
+        
+        tf_NombreTarea.setText(tareaConsultada.getNombreTarea());
+        tf_idTarea.setText(String.valueOf(tareaConsultada.getIdTarea()));
+        
+        String instruccionesConsulta= tareaConsultada.getInstruccion();
+        String[] instrucciones=instruccionesConsulta.split(",");
+        for (String parte : instrucciones) {
+            filasInstruccion.add(new FilaInstruccion(parte));
+        }
+        
+        String dependenciaConsulta= tareaConsultada.getDependencia();
+        String[] dependencias=dependenciaConsulta.split(",");
+        for (String parte : dependencias) {
+            filasDependencia.add(new FilaDependencia(parte));
+        }
+        
+        cb_Pausa.setSelected(tareaConsultada.getValorPausa());
+        cb_Reanudar.setSelected(tareaConsultada.getValorReanudar());
+        cb_Reiniciar.setSelected(tareaConsultada.getValorReiniciar());
     }
 
 }
