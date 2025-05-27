@@ -18,6 +18,7 @@ import javafx.scene.control.SplitMenuButton;
  * @author parca
  */
 public class Agregarfxml {
+
     public static void cargarOperacionesEnMenu(SplitMenuButton spm_Operacion, EventHandler<ActionEvent> handler) {
         ConsultasSQL listaDeOperacion = new ConsultasSQL();
         List<String> ListaOperacion = listaDeOperacion.ListaTareas();
@@ -44,7 +45,7 @@ public class Agregarfxml {
             spm_Operacion.getItems().add(menuItem);
         }
     }
-    
+
     public boolean validarDatos(String nombreOperacion, int numeroOperaciones, String cadenaDependencias) {
         if (nombreOperacion == null || nombreOperacion.trim().isEmpty()) {
             mostrarAlerta("Error de validación", "El nombre de la operación es obligatorio.");
@@ -61,7 +62,7 @@ public class Agregarfxml {
         return true;
     }
 
-    private void mostrarAlerta(String titulo, String mensaje) {
+    public void mostrarAlerta(String titulo, String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.ERROR);
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);

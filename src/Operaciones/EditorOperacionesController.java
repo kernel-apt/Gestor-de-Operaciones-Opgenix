@@ -151,6 +151,12 @@ public class EditorOperacionesController {
 
     @FXML
     void Eliminar(ActionEvent event) {
+        Agregarfxml utilidades = new Agregarfxml();
+        String textoId = tf_id.getText();
+         if (textoId == null || textoId.trim().isEmpty()) {
+            utilidades.mostrarAlerta("Entrada inválida", "El campo ID no puede estar vacío.");
+            return;
+        }
         int idOperacion = Integer.parseInt(tf_id.getText());
         Consultassql crearTarea = new Consultassql();
         Boolean creado = crearTarea.Eliminar(idOperacion);
@@ -172,49 +178,48 @@ public class EditorOperacionesController {
 
     @FXML
     void Guardar(ActionEvent event) {
-        Operacion operacion = null;
-        int numeroOperaciones = 0;
-        Agregarfxml validar = new Agregarfxml();
-        String nombreOperacion = tf_NombreEntrada.getText();
-        int idOperacion = Integer.parseInt(tf_id.getText());
+        Agregarfxml utilidades = new Agregarfxml();
 
+        String nombreOperacion = tf_NombreEntrada.getText();
+        String textoId = tf_id.getText();
+
+        if (textoId == null || textoId.trim().isEmpty()) {
+            utilidades.mostrarAlerta("Entrada inválida", "El campo ID no puede estar vacío.");
+            return;
+        }
+
+        int idOperacion;
+        try {
+            idOperacion = Integer.parseInt(textoId);
+        } catch (NumberFormatException e) {
+            utilidades.mostrarAlerta("Entrada inválida", "El ID debe ser un número.");
+            return;
+        }
+
+        int numeroOperaciones;
         try {
             numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
         } catch (NumberFormatException e) {
-            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-            alerta.setTitle("Entrada inválida");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se ha indicado un límite de tareas correcto.");
-            alerta.showAndWait();
-            return; // Cancelar ejecución si el límite es inválido
+            utilidades.mostrarAlerta("Entrada inválida", "No se ha indicado un límite de tareas correcto.");
+            return;
         }
 
         String cadenaDependencias = filasDependencia.stream()
                 .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
 
-        boolean validacion = validar.validarDatos(nombreOperacion, numeroOperaciones, cadenaDependencias);
-        if (validacion) {
-            operacion = new Operacion(nombreOperacion, numeroOperaciones, cadenaDependencias);
-        } else {
-            return; // Si la validación falla, no continuar
+        if (!utilidades.validarDatos(nombreOperacion, numeroOperaciones, cadenaDependencias)) {
+            return; // Ya se mostró alerta en validarDatos
         }
 
-        Consultassql crearTarea = new Consultassql();
-        Boolean creado = crearTarea.Modificar(operacion, idOperacion);
+        Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, cadenaDependencias);
+        Consultassql consultas = new Consultassql();
+        boolean creado = consultas.Modificar(operacion, idOperacion);
 
         if (creado) {
-            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-            alerta.setTitle("Operación exitosa");
-            alerta.setHeaderText(null);
-            alerta.setContentText("Los datos se han guardado correctamente.");
-            alerta.showAndWait();
+            utilidades.mostrarAlerta("Operación exitosa", "Los datos se han guardado correctamente.");
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se pudieron guardar los datos.");
-            alerta.showAndWait();
+            utilidades.mostrarAlerta("Error", "No se pudieron guardar los datos.");
         }
     }
 
@@ -253,7 +258,7 @@ public class EditorOperacionesController {
             for (String parte : dependencias) {
                 filasDependencia.add(new FilaDependencia(parte));
             }
-        }else{
+        } else {
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Error");
             alerta.setHeaderText(null);

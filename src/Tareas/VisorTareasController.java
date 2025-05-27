@@ -36,6 +36,9 @@ public class VisorTareasController {
 
     @FXML
     private Button btn_Guardar;
+    
+    @FXML
+    private Button btn_Eliminar;
 
     @FXML
     private CheckBox cb_Pausa;
@@ -179,6 +182,14 @@ public class VisorTareasController {
     void Guardar(ActionEvent event) {
         Tareas tarea = null;
         AgregarFXML validar = new AgregarFXML();
+        String textoId=tf_idTarea.getText();
+         if (textoId == null || textoId.trim().isEmpty()) {
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No hay tarea seleccionada");
+            return;
+        }
         int idTarea = Integer.parseInt(tf_idTarea.getText());
         String nombreTarea = tf_NombreTarea.getText();
         String descripcion = tf_Descripcion.getText();
@@ -212,6 +223,39 @@ public class VisorTareasController {
             alerta.setContentText("No se pudieron guardar los datos.");
         }
 
+    }
+    
+       @FXML
+    void Eliminar(ActionEvent event) {
+        String textoId=tf_idTarea.getText();
+        
+        if (textoId == null || textoId.trim().isEmpty()) {
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No se pudieron eliminar los datos.");
+            alerta.showAndWait();
+            return;
+        }
+        int id_Tarea = Integer.parseInt(tf_idTarea.getText());
+        
+        
+        ConsultasSQL crearTarea = new ConsultasSQL();
+        Boolean creado = crearTarea.Eliminar(id_Tarea);
+
+        if (creado) {
+            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+            alerta.setTitle("Operación exitosa");
+            alerta.setHeaderText(null);
+            alerta.setContentText("Los datos se han eliminado correctamente.");
+            alerta.showAndWait();
+        } else {
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No se pudieron eliminar los datos.");
+            alerta.showAndWait();
+        }
     }
 
     @FXML
