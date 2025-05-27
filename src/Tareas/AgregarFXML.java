@@ -42,7 +42,7 @@ public class AgregarFXML {
     }
     
     public boolean validarCampos(String nombreTarea, String descripcion,
-            String cadenaInstrucciones, String cadenaDependencias) {
+            String cadenaInstrucciones) {
         if (nombreTarea == null || nombreTarea.trim().isEmpty()) {
             mostrarAlerta("Error de validación", "El nombre de la tarea es obligatorio.");
             return false;
@@ -55,11 +55,6 @@ public class AgregarFXML {
 
         if (cadenaInstrucciones == null || cadenaInstrucciones.trim().isEmpty()) {
             mostrarAlerta("Error de validación", "Debe haber al menos una instrucción.");
-            return false;
-        }
-
-        if (cadenaDependencias == null || cadenaDependencias.trim().isEmpty()) {
-            mostrarAlerta("Error de validación", "Debe haber al menos una dependencia.");
             return false;
         }
 

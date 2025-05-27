@@ -15,6 +15,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 
 public class VisorTareasController {
 
@@ -25,7 +26,7 @@ public class VisorTareasController {
     private Button btn_AgregarInstruccion;
 
     @FXML
-    private Button btn_Descartar;
+    private Button btn_Salir;
 
     @FXML
     private Button btn_DescartarDependencia;
@@ -77,7 +78,7 @@ public class VisorTareasController {
 
     @FXML
     private TextField tf_idTarea;
-    
+
     public String nombreInstruccion;
     public String nombreDependencia;
     private ObservableList<FilaInstruccion> filasInstruccion = FXCollections.observableArrayList();
@@ -144,11 +145,8 @@ public class VisorTareasController {
 
     @FXML
     void Descartar(ActionEvent event) {
-        tf_NombreTarea.setText(null);
-        tf_Descripcion.setText(null);
-        tf_NombreInstruccion.setText(null);
-        filasInstruccion.clear();
-        filasDependencia.clear();
+        Stage stage = (Stage) btn_Salir.getScene().getWindow();
+        stage.close();
     }
 
     @FXML
@@ -180,7 +178,8 @@ public class VisorTareasController {
     @FXML
     void Guardar(ActionEvent event) {
         Tareas tarea = null;
-        AgregarFXML validar = null;
+        AgregarFXML validar = new AgregarFXML();
+        int idTarea = Integer.parseInt(tf_idTarea.getText());
         String nombreTarea = tf_NombreTarea.getText();
         String descripcion = tf_Descripcion.getText();
         Boolean valorPausa = cb_Pausa.isSelected();
@@ -194,13 +193,13 @@ public class VisorTareasController {
         String cadenaDependencias = filasDependencia.stream()
                 .map(fila -> fila.getDependencia())
                 .collect(Collectors.joining(","));
-        boolean validacion = validar.validarCampos(nombreTarea, descripcion, cadenaInstrucciones, cadenaDependencias);
+        boolean validacion = validar.validarCampos(nombreTarea, descripcion, cadenaInstrucciones);
 
         if (validacion) {
             tarea = new Tareas(nombreTarea, descripcion, valorPausa, valorReanudar, valorReiniciar, cadenaDependencias, cadenaInstrucciones);
         }
         ConsultasSQL crearTarea = new ConsultasSQL();
-        Boolean creado = crearTarea.Guardar(tarea);
+        Boolean creado = crearTarea.Modificar(tarea, idTarea);
         if (creado) {
             Alert alerta = new Alert(Alert.AlertType.INFORMATION);
             alerta.setTitle("Operación exitosa");
@@ -246,28 +245,38 @@ public class VisorTareasController {
     }
 
     private void cargarDatos(FilaTareas tareaSeleccionada) {
+        String comparar = tareaSeleccionada.getTarea();
+        if (!comparar.equals("No existen tareas actualmente") && !comparar.equals("")) {
         ConsultasSQL consultaDetalleTarea = new ConsultasSQL();
         Tareas tareaConsultada;
         tareaConsultada = consultaDetalleTarea.ConsultaTareas();
-        
+
         tf_NombreTarea.setText(tareaConsultada.getNombreTarea());
         tf_idTarea.setText(String.valueOf(tareaConsultada.getIdTarea()));
-        
-        String instruccionesConsulta= tareaConsultada.getInstruccion();
-        String[] instrucciones=instruccionesConsulta.split(",");
+
+        String instruccionesConsulta = tareaConsultada.getInstruccion();
+        String[] instrucciones = instruccionesConsulta.split(",");
         for (String parte : instrucciones) {
             filasInstruccion.add(new FilaInstruccion(parte));
         }
-        
-        String dependenciaConsulta= tareaConsultada.getDependencia();
-        String[] dependencias=dependenciaConsulta.split(",");
+
+        String dependenciaConsulta = tareaConsultada.getDependencia();
+        String[] dependencias = dependenciaConsulta.split(",");
         for (String parte : dependencias) {
             filasDependencia.add(new FilaDependencia(parte));
         }
-        
+
         cb_Pausa.setSelected(tareaConsultada.getValorPausa());
         cb_Reanudar.setSelected(tareaConsultada.getValorReanudar());
         cb_Reiniciar.setSelected(tareaConsultada.getValorReiniciar());
+        }
+        else{
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText(null);
+            alerta.setContentText("No hay tareas creadas");
+            alerta.showAndWait();
+        }
     }
 
 }

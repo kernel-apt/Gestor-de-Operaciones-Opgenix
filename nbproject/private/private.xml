@@ -3,9 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/parca/OneDrive/Documentos/git/GestorDeOperaciones/src/Operaciones/CrearOperacionesController.java</file>
-            <file>file:/C:/Users/parca/OneDrive/Documentos/git/GestorDeOperaciones/src/Tareas/CrearTareaController.java</file>
-            <file>file:/C:/Users/parca/OneDrive/Documentos/git/GestorDeOperaciones/src/gestorDeOperaciones/PantallaPrincipalController.java</file>
+            <file>file:/C:/Users/parca/OneDrive/Documentos/git/GestorDeOperaciones/src/Operaciones/Consultassql.java</file>
+            <file>file:/C:/Users/parca/OneDrive/Documentos/git/GestorDeOperaciones/src/Tareas/VisorTareasController.java</file>
+            <file>file:/C:/Users/parca/OneDrive/Documentos/git/GestorDeOperaciones/src/Operaciones/Agregarfxml.java</file>
+            <file>file:/C:/Users/parca/OneDrive/Documentos/git/GestorDeOperaciones/src/Operaciones/EditorOperacionesController.java</file>
         </group>
     </open-files>
 </project-private>

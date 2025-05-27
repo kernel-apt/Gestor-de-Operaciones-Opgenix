@@ -51,7 +51,7 @@
             </TableView>
             <Button fx:id="btn_AgregarDependencia" layoutX="658.0" layoutY="144.0" mnemonicParsing="false" onAction="#AgregarDependencia" prefHeight="25.0" prefWidth="34.0" text="+" />
             <Button fx:id="btn_Guardar" layoutX="518.0" layoutY="480.0" mnemonicParsing="false" onAction="#Guardar" text="Guardar cambios" />
-            <Button fx:id="btn_Descartar" layoutX="637.0" layoutY="480.0" mnemonicParsing="false" onAction="#Descartar" prefHeight="25.0" prefWidth="59.0" text="Salir" />
+            <Button fx:id="btn_Salir" layoutX="637.0" layoutY="480.0" mnemonicParsing="false" onAction="#Descartar" prefHeight="25.0" prefWidth="59.0" text="Salir" />
             <TextField fx:id="tf_NombreTarea" editable="false" layoutX="150.0" layoutY="10.0" prefHeight="25.0" prefWidth="495.0" />
             <TextField fx:id="tf_Descripcion" layoutX="150.0" layoutY="51.0" prefHeight="25.0" prefWidth="576.0" />
             <TextField fx:id="tf_NombreInstruccion" layoutX="150.0" layoutY="96.0" prefHeight="25.0" prefWidth="487.0" />

@@ -103,4 +103,52 @@ public class ConsultasSQL {
             }
         return creado;
     }
+    
+    public boolean Modificar(Tareas tarea,int id) {
+    Boolean creado=false;
+            if (con != null) {
+                String sql = "UPDATE operacion SET Nombre = ?, Descripcion = ?, Pausa = ?, Reanudar = ?, Reiniciar = ?, Dependencia = ?,Instruccion = ?, Estado = ? WHERE idTarea = ?";
+                
+                try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setString(1, tarea.getNombreTarea());
+                    ps.setString(2, tarea.getDescripcion());
+                    ps.setBoolean(3, tarea.getValorPausa());
+                    ps.setBoolean(4, tarea.getValorReanudar());
+                    ps.setBoolean(5, tarea.getValorReiniciar());
+                    ps.setString(6, tarea.getDependencia());
+                    ps.setString(7, tarea.getInstruccion());
+                    ps.setString(8, "Modificado");
+                    ps.setInt(8, id);
+                    
+                    
+                    int filasInsertadas = ps.executeUpdate();
+                    if(filasInsertadas!=0){
+                        creado=true;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        return creado;
+    }
+    
+    public boolean Eliminar(int id) {
+        Boolean modificado = false;
+        if (con != null) {
+            String sql = "DELETE FROM tarea WHERE idTarea = ?";
+
+            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setInt(1, id);
+                int filasInsertadas = ps.executeUpdate();
+                if (filasInsertadas != 0) {
+                    modificado = true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return modificado;
+    }
 }
