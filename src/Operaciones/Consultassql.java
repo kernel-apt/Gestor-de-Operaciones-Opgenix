@@ -48,7 +48,7 @@ public class Consultassql {
         }
         return (ArrayList) cadenaOperacion;
     }
-    
+
     public ArrayList<String> ListaOperaciones() {
         cadenaOperacion.clear();
         try {
@@ -66,7 +66,7 @@ public class Consultassql {
         }
         return (ArrayList) cadenaOperacion;
     }
-    
+
     public boolean Guardar(Operacion operacion) {
         Boolean creado = false;
         if (con != null) {
@@ -113,14 +113,14 @@ public class Consultassql {
         }
         return modificado;
     }
-    
+
     public boolean Eliminar(int id) {
         Boolean modificado = false;
         if (con != null) {
             String sql = "DELETE FROM operacion WHERE idOperacion = ?";
 
             try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    ps.setInt(1, id);
+                ps.setInt(1, id);
                 int filasInsertadas = ps.executeUpdate();
                 if (filasInsertadas != 0) {
                     modificado = true;
@@ -137,13 +137,15 @@ public class Consultassql {
         Operacion operacion = null;
         try {
             if (con != null) {
+
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery("SELECT * FROM operacion");
                 while (rs.next()) {
-                    idOperacion = rs.getInt("idTarea");
+                    idOperacion = rs.getInt("idOperacion");
                     nombreOperacion = rs.getString("Nombre");
                     limiteTareas = rs.getInt("Limite");
                     tareas = rs.getString("Tareas");
+                    estado = rs.getString("Estado");
                     operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
                 }
             }
@@ -153,4 +155,34 @@ public class Consultassql {
         }
         return operacion;
     }
+
+    public Operacion ConsultaOperacion(String consultaOperacion) {
+        Operacion operacion = null;
+
+        if (con != null) {
+            String sql = "SELECT * FROM operacion WHERE Nombre = ?";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, consultaOperacion);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        int idOperacion = rs.getInt("idOperacion");
+                        String nombreOperacion = rs.getString("Nombre");
+                        int limiteTareas = rs.getInt("Limite");
+                        String tareas = rs.getString("Tareas");
+                        String estado = rs.getString("Estado");
+
+                        operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
+                        // Si necesitas el estado, asegúrate que el constructor o la clase lo manejen
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // Opcional: mostrar alerta o manejar error
+                alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
+                alerta.showAndWait();
+            }
+        }
+        return operacion;
+    }
+
 }

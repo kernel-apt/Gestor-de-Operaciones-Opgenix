@@ -22,6 +22,7 @@ public class ConsultasSQL {
 
     Connection con = GestorDeOperaciones.getConnection();
     private List<String> cadenaTareas = new ArrayList<>();
+    private List<Integer> cantidades = new ArrayList<>();
     Alert alerta;
     String nombreTarea;
     int idTarea;
@@ -49,23 +50,56 @@ public class ConsultasSQL {
         }
         return (ArrayList) cadenaTareas;
     }
-    
-    public Tareas ConsultaTareas() {
-        Tareas tarea=null;
+
+    public ArrayList<Integer> ListaTareasCantidad() {
+        if (cantidades == null) {
+            cantidades = new ArrayList<>();
+        }
+        cantidades.clear();
         try {
-            if (con != null) {  
+            if (con != null) {
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM operacion");
+                while (rs.next()) {
+                    int tareasTotales = rs.getInt(1); // Puedes usar índice 1 para COUNT(*)
+                    cantidades.add(tareasTotales);
+                }
+
+                rs = st.executeQuery("SELECT COUNT(*) FROM operacion WHERE Estado = 'En ejecucion'");
+                while (rs.next()) {
+                    int tareasActivas = rs.getInt(1);
+                    cantidades.add(tareasActivas);
+                }
+                
+                rs = st.executeQuery("SELECT COUNT(*) FROM tarea WHERE Estado = 'En ejecucion'");
+                while (rs.next()) {
+                    int tareasActivas = rs.getInt(1);
+                    cantidades.add(tareasActivas);
+                }
+            }
+        } catch (SQLException e) {
+            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
+            alerta.showAndWait();
+        }
+        return (ArrayList<Integer>) cantidades;
+    }
+
+    public Tareas ConsultaTareas() {
+        Tareas tarea = null;
+        try {
+            if (con != null) {
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery("SELECT * FROM tarea");
                 while (rs.next()) {
-                    idTarea=rs.getInt("idTarea");
+                    idTarea = rs.getInt("idTarea");
                     nombreTarea = rs.getString("Nombre");
-                    descripcion=rs.getString("Descripcion");
-                    pausa=rs.getBoolean("Pausa");
-                    reanudar=rs.getBoolean("Reanudar");
-                    reiniciar=rs.getBoolean("Reiniciar");
-                    dependencia=rs.getString("Dependencia");
-                    instruccion=rs.getString("Instruccion");
-                    tarea=new Tareas(idTarea,nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
+                    descripcion = rs.getString("Descripcion");
+                    pausa = rs.getBoolean("Pausa");
+                    reanudar = rs.getBoolean("Reanudar");
+                    reiniciar = rs.getBoolean("Reiniciar");
+                    dependencia = rs.getString("Dependencia");
+                    instruccion = rs.getString("Instruccion");
+                    tarea = new Tareas(idTarea, nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
                 }
             }
         } catch (SQLException e) {
@@ -74,72 +108,69 @@ public class ConsultasSQL {
         }
         return tarea;
     }
-    
-    
+
     public boolean Guardar(Tareas tarea) {
-    Boolean creado=false;
-            if (con != null) {
-                String sql = "INSERT INTO tareas (Nombre, Descripcion, Pausa, Reanudar, Reiniciar, Dependencia,Instruccion, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                
-                try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    ps.setString(1, tarea.getNombreTarea());
-                    ps.setString(2, tarea.getDescripcion());
-                    ps.setBoolean(3, tarea.getValorPausa());
-                    ps.setBoolean(4, tarea.getValorReanudar());
-                    ps.setBoolean(5, tarea.getValorReiniciar());
-                    ps.setString(6, tarea.getDependencia());
-                    ps.setString(7, tarea.getInstruccion());
-                    ps.setString(8, "Creado");
-                    
-                    
-                    int filasInsertadas = ps.executeUpdate();
-                    if(filasInsertadas!=0){
-                        creado=true;
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+        Boolean creado = false;
+        if (con != null) {
+            String sql = "INSERT INTO tareas (Nombre, Descripcion, Pausa, Reanudar, Reiniciar, Dependencia,Instruccion, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
+            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, tarea.getNombreTarea());
+                ps.setString(2, tarea.getDescripcion());
+                ps.setBoolean(3, tarea.getValorPausa());
+                ps.setBoolean(4, tarea.getValorReanudar());
+                ps.setBoolean(5, tarea.getValorReiniciar());
+                ps.setString(6, tarea.getDependencia());
+                ps.setString(7, tarea.getInstruccion());
+                ps.setString(8, "Creado");
+
+                int filasInsertadas = ps.executeUpdate();
+                if (filasInsertadas != 0) {
+                    creado = true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
+
+        }
         return creado;
     }
-    
-    public boolean Modificar(Tareas tarea,int id) {
-    Boolean creado=false;
-            if (con != null) {
-                String sql = "UPDATE operacion SET Nombre = ?, Descripcion = ?, Pausa = ?, Reanudar = ?, Reiniciar = ?, Dependencia = ?,Instruccion = ?, Estado = ? WHERE idTarea = ?";
-                
-                try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    ps.setString(1, tarea.getNombreTarea());
-                    ps.setString(2, tarea.getDescripcion());
-                    ps.setBoolean(3, tarea.getValorPausa());
-                    ps.setBoolean(4, tarea.getValorReanudar());
-                    ps.setBoolean(5, tarea.getValorReiniciar());
-                    ps.setString(6, tarea.getDependencia());
-                    ps.setString(7, tarea.getInstruccion());
-                    ps.setString(8, "Modificado");
-                    ps.setInt(8, id);
-                    
-                    
-                    int filasInsertadas = ps.executeUpdate();
-                    if(filasInsertadas!=0){
-                        creado=true;
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
 
+    public boolean Modificar(Tareas tarea, int id) {
+        Boolean creado = false;
+        if (con != null) {
+            String sql = "UPDATE operacion SET Nombre = ?, Descripcion = ?, Pausa = ?, Reanudar = ?, Reiniciar = ?, Dependencia = ?,Instruccion = ?, Estado = ? WHERE idTarea = ?";
+
+            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, tarea.getNombreTarea());
+                ps.setString(2, tarea.getDescripcion());
+                ps.setBoolean(3, tarea.getValorPausa());
+                ps.setBoolean(4, tarea.getValorReanudar());
+                ps.setBoolean(5, tarea.getValorReiniciar());
+                ps.setString(6, tarea.getDependencia());
+                ps.setString(7, tarea.getInstruccion());
+                ps.setString(8, "Modificado");
+                ps.setInt(8, id);
+
+                int filasInsertadas = ps.executeUpdate();
+                if (filasInsertadas != 0) {
+                    creado = true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
+
+        }
         return creado;
     }
-    
+
     public boolean Eliminar(int id) {
         Boolean modificado = false;
         if (con != null) {
             String sql = "DELETE FROM tarea WHERE idTarea = ?";
 
             try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    ps.setInt(1, id);
+                ps.setInt(1, id);
                 int filasInsertadas = ps.executeUpdate();
                 if (filasInsertadas != 0) {
                     modificado = true;

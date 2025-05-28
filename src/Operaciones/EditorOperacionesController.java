@@ -81,13 +81,13 @@ public class EditorOperacionesController {
         tbc_Operaciones.setCellValueFactory(new PropertyValueFactory<>("operacion"));
         tbv_Operaciones.setItems(filasOperaciones);
 
-        cargarOperacionesEnTabla();
+            cargarOperacionesEnTabla();
 
-        tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                cargarDatos(newSelection);
-            }
-        });
+            tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+                if (newSelection != null) {
+                    cargarDatos(newSelection);
+                }
+            });
 
         Agregarfxml.cargarOperacionesEnMenu(spm_Tareas, this::SeleccionarMenuItem);
         MenuItem primerItem = spm_Tareas.getItems().get(0);
