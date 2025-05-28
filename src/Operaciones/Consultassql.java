@@ -133,30 +133,32 @@ public class Consultassql {
         return modificado;
     }
 
-    public Operacion ConsultaOperacion() {
-        Operacion operacion = null;
-        try {
-            if (con != null) {
-
-                Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery("SELECT * FROM operacion");
-                while (rs.next()) {
-                    idOperacion = rs.getInt("idOperacion");
-                    nombreOperacion = rs.getString("Nombre");
-                    limiteTareas = rs.getInt("Limite");
-                    tareas = rs.getString("Tareas");
-                    estado = rs.getString("Estado");
-                    operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
-                }
+    public List<Operacion> ConsultaOperacion() {
+    List<Operacion> operaciones = new ArrayList<>();
+    try {
+        if (con != null) {
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery("SELECT * FROM operacion");
+            while (rs.next()) {
+                int idOperacion = rs.getInt("idOperacion");
+                String nombreOperacion = rs.getString("Nombre");
+                int limiteTareas = rs.getInt("Limite");
+                String tareas = rs.getString("Tareas");
+                String estado = rs.getString("Estado");
+                Operacion operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
+                operaciones.add(operacion);
             }
-        } catch (SQLException e) {
-            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-            alerta.showAndWait();
         }
-        return operacion;
+    } catch (SQLException e) {
+        alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
+        alerta.showAndWait();
     }
+    return operaciones;
+}
 
-    public Operacion ConsultaOperacion(String consultaOperacion) {
+
+    public List<Operacion> ConsultaOperacion(String consultaOperacion) {
+        List<Operacion> operaciones = new ArrayList<>();
         Operacion operacion = null;
 
         if (con != null) {
@@ -172,7 +174,7 @@ public class Consultassql {
                         String estado = rs.getString("Estado");
 
                         operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
-                        // Si necesitas el estado, asegúrate que el constructor o la clase lo manejen
+                        operaciones.add(operacion);
                     }
                 }
             } catch (SQLException e) {
@@ -182,7 +184,7 @@ public class Consultassql {
                 alerta.showAndWait();
             }
         }
-        return operacion;
+        return operaciones;
     }
 
 }

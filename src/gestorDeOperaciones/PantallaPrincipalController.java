@@ -6,6 +6,7 @@ import Operaciones.Operacion;
 import Tareas.AgregarFXML;
 import Tareas.ConsultasSQL;
 import Tareas.FilaTareas;
+import Tareas.Tareas;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
@@ -14,12 +15,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import gestorDeOperaciones.CrearPane;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -35,7 +39,7 @@ public class PantallaPrincipalController {
 
     @FXML
     private AnchorPane ap_Operaciones;
-    
+
     @FXML
     private FlowPane fp_Gestor;
 
@@ -167,29 +171,74 @@ public class PantallaPrincipalController {
             filasOperaciones.add(new FilaOperacion("No existen operaciones actualmente"));
         }
     }
-    
-    public void cargarGestor(String operacion){
-        Operacion operacionConsultada = null;
-        Consultassql consultasql= new Consultassql();
-        operacionConsultada= consultasql.ConsultaOperacion(operacion);
-        
-        TitledPane titledPane= new TitledPane();
-         VBox vbox = new VBox();
-         vbox.setSpacing(5);
-         
-        String dependenciaConsulta = operacionConsultada.getTareasAsociadas();
-            String[] dependencias = dependenciaConsulta.split(",");
-           
-            for (String parte : dependencias) {
-                
-                CheckBox checkbox= new CheckBox();
-                checkbox.setId("ckb_"+parte.trim());
-                checkbox.setText(parte.trim());
-                vbox.getChildren().add(checkbox);
-                
+
+    public void cargarGestor(String operacion) {
+        Consultassql consultasql = new Consultassql();
+        ConsultasSQL consultaSQL = new ConsultasSQL();
+        List<Operacion> operacionConsultada = consultasql.ConsultaOperacion(operacion);
+
+        fp_Gestor.getChildren().clear();
+
+        if (operacionConsultada != null && !operacionConsultada.isEmpty()) {
+            for (Operacion operacionExtraer : operacionConsultada) {
+                TitledPane titledPane = new TitledPane();
+                titledPane.setText(operacionExtraer.getNombreOperacion());
+
+                VBox vbox = new VBox();
+                vbox.setSpacing(5);
+
+                String dependenciaConsulta = operacionExtraer.getTareasAsociadas();
+                String[] dependencias = dependenciaConsulta.split(",");
+
+                for (String parte : dependencias) {
+                    try {
+                        List<Tareas> tareaConsultada = consultaSQL.ConsultaTareas(parte.trim());
+                        if (tareaConsultada != null && !tareaConsultada.isEmpty()) {
+
+                            TitledPane titledPaneTarea = new TitledPane();
+                            titledPaneTarea.setText(parte.trim());
+
+                            VBox vboxTareas = new VBox();
+                            vboxTareas.setSpacing(5);
+
+                            for (Tareas tareaExtraer : tareaConsultada) {
+                                String tareaConsulta = tareaExtraer.getInstruccion();
+                                String[] instrucciones = tareaConsulta.split(",");
+
+                                for (String instruccionesTareas : instrucciones) {
+                                    CheckBox checkbox = new CheckBox(instruccionesTareas.trim());
+                                    checkbox.setId(titledPaneTarea.getText() + "_" + instruccionesTareas.trim());
+                                    vboxTareas.getChildren().add(checkbox);
+                                }
+
+                                // Botones con texto claro
+                                ButtonBar estados = new ButtonBar();
+
+                                Button btn_Pausa = new Button("Pausar");
+                                Button btn_Reanudar = new Button("Reanudar");
+                                Button btn_Reiniciar = new Button("Reiniciar");
+
+                                estados.getButtons().addAll(btn_Pausa, btn_Reanudar, btn_Reiniciar);
+                                vboxTareas.getChildren().add(estados);
+                            }
+
+                            titledPaneTarea.setContent(vboxTareas);
+                            vbox.getChildren().add(titledPaneTarea);
+                        }
+
+                    } catch (Exception e) {
+                        System.err.println("Error al consultar tarea '" + parte.trim() + "': " + e.getMessage());
+                        Alert alerta = new Alert(Alert.AlertType.ERROR, "Error al consultar tarea: " + parte.trim() + "\n" + e.getMessage());
+                        alerta.showAndWait();
+                    }
+                }
+
+                titledPane.setContent(vbox);
+                fp_Gestor.getChildren().add(titledPane);
             }
-        titledPane.setContent(vbox);
-        fp_Gestor.getChildren().add(titledPane);
+        } else {
+            System.out.println("No se encontraron operaciones para: " + operacion);
+        }
     }
 
 }

@@ -70,7 +70,7 @@ public class ConsultasSQL {
                     int tareasActivas = rs.getInt(1);
                     cantidades.add(tareasActivas);
                 }
-                
+
                 rs = st.executeQuery("SELECT COUNT(*) FROM tarea WHERE Estado = 'En ejecucion'");
                 while (rs.next()) {
                     int tareasActivas = rs.getInt(1);
@@ -84,8 +84,9 @@ public class ConsultasSQL {
         return (ArrayList<Integer>) cantidades;
     }
 
-    public Tareas ConsultaTareas() {
-        Tareas tarea = null;
+    public List<Tareas> ConsultaTareas() {
+        List<Tareas> listaTareas = new ArrayList<>();
+        Tareas tarea;
         try {
             if (con != null) {
                 Statement st = con.createStatement();
@@ -100,13 +101,45 @@ public class ConsultasSQL {
                     dependencia = rs.getString("Dependencia");
                     instruccion = rs.getString("Instruccion");
                     tarea = new Tareas(idTarea, nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
+                    listaTareas.add(tarea);
                 }
             }
         } catch (SQLException e) {
             alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
             alerta.showAndWait();
         }
-        return tarea;
+        return listaTareas;
+    }
+
+    public List<Tareas> ConsultaTareas(String nombreTareaFiltro) {
+        List<Tareas> listaTareas = new ArrayList<>();
+        try {
+            if (con != null) {
+                String sql = "SELECT * FROM tarea WHERE Nombre = ?";
+                try (PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setString(1, nombreTareaFiltro);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            idTarea = rs.getInt("idTarea");
+                            nombreTarea = rs.getString("Nombre");
+                            descripcion = rs.getString("Descripcion");
+                            pausa = rs.getBoolean("Pausa");
+                            reanudar = rs.getBoolean("Reanudar");
+                            reiniciar = rs.getBoolean("Reiniciar");
+                            dependencia = rs.getString("Dependencia");
+                            instruccion = rs.getString("Instruccion");
+
+                            Tareas tarea = new Tareas(idTarea, nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
+                            listaTareas.add(tarea);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
+            alerta.showAndWait();
+        }
+        return listaTareas;
     }
 
     public boolean Guardar(Tareas tarea) {

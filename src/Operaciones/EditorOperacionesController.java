@@ -7,6 +7,7 @@ import Tareas.FilaInstruccion;
 import Tareas.FilaTareas;
 import Tareas.Tareas;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -246,25 +247,51 @@ public class EditorOperacionesController {
 
     private void cargarDatos(FilaOperacion operacionSeleccionada) {
         String comparar = operacionSeleccionada.getOperacion();
+
         if (!comparar.equals("No existen operaciones actualmente") && !comparar.equals("")) {
             Consultassql consultaDetalleOperacion = new Consultassql();
-            Operacion operacionConsultada = consultaDetalleOperacion.ConsultaOperacion();
+            List<Operacion> operacionesConsultadas = consultaDetalleOperacion.ConsultaOperacion();
 
-            tf_NombreEntrada.setText(operacionConsultada.getNombreOperacion());
-            tf_id.setText(String.valueOf(operacionConsultada.getId()));
+            // Buscar la operación que coincida con el nombre seleccionado
+            Operacion operacionConsultada = null;
+            for (Operacion op : operacionesConsultadas) {
+                if (op.getNombreOperacion().equals(comparar)) {
+                    operacionConsultada = op;
+                    break;
+                }
+            }
 
-            String dependenciaConsulta = operacionConsultada.getTareasAsociadas();
-            String[] dependencias = dependenciaConsulta.split(",");
-            for (String parte : dependencias) {
-                filasDependencia.add(new FilaDependencia(parte));
+            if (operacionConsultada != null) {
+                // Cargar datos en los campos de texto
+                tf_NombreEntrada.setText(operacionConsultada.getNombreOperacion());
+                tf_id.setText(String.valueOf(operacionConsultada.getId()));
+
+                // Limpiar lista previa de dependencias
+                filasDependencia.clear();
+
+                // Procesar y cargar las dependencias (tareas asociadas)
+                String dependenciaConsulta = operacionConsultada.getTareasAsociadas();
+                if (dependenciaConsulta != null && !dependenciaConsulta.trim().isEmpty()) {
+                    String[] dependencias = dependenciaConsulta.split(",");
+                    for (String parte : dependencias) {
+                        filasDependencia.add(new FilaDependencia(parte.trim()));
+                    }
+                }
+            } else {
+                // Mostrar alerta si la operación no se encuentra
+                Alert alerta = new Alert(Alert.AlertType.ERROR);
+                alerta.setTitle("Error");
+                alerta.setHeaderText(null);
+                alerta.setContentText("La operación seleccionada no existe en la base de datos.");
+                alerta.showAndWait();
             }
         } else {
+            // Mostrar alerta si no hay operaciones creadas o el nombre es inválido
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Error");
             alerta.setHeaderText(null);
             alerta.setContentText("No hay operaciones creadas");
             alerta.showAndWait();
         }
-
     }
 }

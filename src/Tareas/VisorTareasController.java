@@ -1,6 +1,7 @@
 package Tareas;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -36,7 +37,7 @@ public class VisorTareasController {
 
     @FXML
     private Button btn_Guardar;
-    
+
     @FXML
     private Button btn_Eliminar;
 
@@ -182,8 +183,8 @@ public class VisorTareasController {
     void Guardar(ActionEvent event) {
         Tareas tarea = null;
         AgregarFXML validar = new AgregarFXML();
-        String textoId=tf_idTarea.getText();
-         if (textoId == null || textoId.trim().isEmpty()) {
+        String textoId = tf_idTarea.getText();
+        if (textoId == null || textoId.trim().isEmpty()) {
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Error");
             alerta.setHeaderText(null);
@@ -224,11 +225,11 @@ public class VisorTareasController {
         }
 
     }
-    
-       @FXML
+
+    @FXML
     void Eliminar(ActionEvent event) {
-        String textoId=tf_idTarea.getText();
-        
+        String textoId = tf_idTarea.getText();
+
         if (textoId == null || textoId.trim().isEmpty()) {
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Error");
@@ -238,8 +239,7 @@ public class VisorTareasController {
             return;
         }
         int id_Tarea = Integer.parseInt(tf_idTarea.getText());
-        
-        
+
         ConsultasSQL crearTarea = new ConsultasSQL();
         Boolean creado = crearTarea.Eliminar(id_Tarea);
 
@@ -290,31 +290,61 @@ public class VisorTareasController {
 
     private void cargarDatos(FilaTareas tareaSeleccionada) {
         String comparar = tareaSeleccionada.getTarea();
+
         if (!comparar.equals("No existen tareas actualmente") && !comparar.equals("")) {
-        ConsultasSQL consultaDetalleTarea = new ConsultasSQL();
-        Tareas tareaConsultada;
-        tareaConsultada = consultaDetalleTarea.ConsultaTareas();
+            ConsultasSQL consultaDetalleTarea = new ConsultasSQL();
+            List<Tareas> listaTareas = consultaDetalleTarea.ConsultaTareas();
 
-        tf_NombreTarea.setText(tareaConsultada.getNombreTarea());
-        tf_idTarea.setText(String.valueOf(tareaConsultada.getIdTarea()));
+            // Buscar la tarea que coincida con el nombre seleccionado
+            Tareas tareaConsultada = null;
+            for (Tareas t : listaTareas) {
+                if (t.getNombreTarea().equals(comparar)) {
+                    tareaConsultada = t;
+                    break;
+                }
+            }
 
-        String instruccionesConsulta = tareaConsultada.getInstruccion();
-        String[] instrucciones = instruccionesConsulta.split(",");
-        for (String parte : instrucciones) {
-            filasInstruccion.add(new FilaInstruccion(parte));
-        }
+            if (tareaConsultada != null) {
+                // Cargar datos en los campos de texto
+                tf_NombreTarea.setText(tareaConsultada.getNombreTarea());
+                tf_idTarea.setText(String.valueOf(tareaConsultada.getIdTarea()));
 
-        String dependenciaConsulta = tareaConsultada.getDependencia();
-        String[] dependencias = dependenciaConsulta.split(",");
-        for (String parte : dependencias) {
-            filasDependencia.add(new FilaDependencia(parte));
-        }
+                // Limpiar listas previas
+                filasInstruccion.clear();
+                filasDependencia.clear();
 
-        cb_Pausa.setSelected(tareaConsultada.getValorPausa());
-        cb_Reanudar.setSelected(tareaConsultada.getValorReanudar());
-        cb_Reiniciar.setSelected(tareaConsultada.getValorReiniciar());
-        }
-        else{
+                // Procesar y cargar las instrucciones
+                String instruccionesConsulta = tareaConsultada.getInstruccion();
+                if (instruccionesConsulta != null && !instruccionesConsulta.trim().isEmpty()) {
+                    String[] instrucciones = instruccionesConsulta.split(",");
+                    for (String parte : instrucciones) {
+                        filasInstruccion.add(new FilaInstruccion(parte.trim()));
+                    }
+                }
+
+                // Procesar y cargar las dependencias
+                String dependenciaConsulta = tareaConsultada.getDependencia();
+                if (dependenciaConsulta != null && !dependenciaConsulta.trim().isEmpty()) {
+                    String[] dependencias = dependenciaConsulta.split(",");
+                    for (String parte : dependencias) {
+                        filasDependencia.add(new FilaDependencia(parte.trim()));
+                    }
+                }
+
+                // Configurar los CheckBox según los valores de la tarea
+                cb_Pausa.setSelected(tareaConsultada.getValorPausa());
+                cb_Reanudar.setSelected(tareaConsultada.getValorReanudar());
+                cb_Reiniciar.setSelected(tareaConsultada.getValorReiniciar());
+            } else {
+                // Mostrar alerta si la tarea no se encuentra
+                Alert alerta = new Alert(Alert.AlertType.ERROR);
+                alerta.setTitle("Error");
+                alerta.setHeaderText(null);
+                alerta.setContentText("La tarea seleccionada no existe en la base de datos.");
+                alerta.showAndWait();
+            }
+        } else {
+            // Mostrar alerta si no hay tareas creadas o el nombre es inválido
             Alert alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Error");
             alerta.setHeaderText(null);
