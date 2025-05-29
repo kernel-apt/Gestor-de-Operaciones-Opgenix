@@ -10,6 +10,27 @@
 <project name="JavaApplication1" default="default" basedir=".">
     <description>Builds, tests, and runs the project JavaApplication1.</description>
     <import file="nbproject/build-impl.xml"/>
+
+<target name="fat-jar" depends="jar" description="Genera un jar con todas las dependencias dentro">
+
+    <mkdir dir="dist"/>
+
+    <jar destfile="dist/GestorDeOperaciones-fat.jar" >
+        <!-- Incluye los .class compilados -->
+        <fileset dir="build/classes"/>
+
+        <!-- Extrae las dependencias de la carpeta lib para incluirlas en el jar -->
+        <zipgroupfileset dir="lib" includes="*.jar"/>
+
+        <!-- MANIFEST para definir la clase principal -->
+        <manifest>
+            <attribute name="Main-Class" value="gestorDeOperaciones.GestorDeOperaciones"/>
+        </manifest>
+    </jar>
+
+</target>
+
+
     <!--
     There exist several targets which are by default empty and which can be 
     used for execution of your tasks. These targets are usually executed 

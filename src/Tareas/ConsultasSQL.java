@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Tareas;
 
 import gestorDeOperaciones.GestorDeOperaciones;
@@ -14,10 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.control.Alert;
 
-/**
- *
- * @author parca
- */
 public class ConsultasSQL {
 
     Connection con = GestorDeOperaciones.getConnection();
@@ -36,13 +28,15 @@ public class ConsultasSQL {
     public ArrayList<String> ListaTareas() {
         cadenaTareas.clear();
         try {
-            if (con != null) {  // Verificar si se ha establecido una conexión.
+            if (con != null) {
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery("SELECT Nombre FROM tarea");
                 while (rs.next()) {
                     nombreTarea = rs.getString("Nombre");
                     cadenaTareas.add(nombreTarea);
                 }
+                rs.close();
+                st.close();
             }
         } catch (SQLException e) {
             alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
@@ -56,26 +50,34 @@ public class ConsultasSQL {
             cantidades = new ArrayList<>();
         }
         cantidades.clear();
+
+        cantidades.add(0);
+        cantidades.add(0);
+        cantidades.add(0);
+
         try {
             if (con != null) {
                 Statement st = con.createStatement();
+
                 ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM operacion");
-                while (rs.next()) {
-                    int tareasTotales = rs.getInt(1); // Puedes usar índice 1 para COUNT(*)
-                    cantidades.add(tareasTotales);
+                if (rs.next()) {
+                    cantidades.set(0, rs.getInt(1));
                 }
+                rs.close();
 
                 rs = st.executeQuery("SELECT COUNT(*) FROM operacion WHERE Estado = 'En ejecucion'");
-                while (rs.next()) {
-                    int tareasActivas = rs.getInt(1);
-                    cantidades.add(tareasActivas);
+                if (rs.next()) {
+                    cantidades.set(1, rs.getInt(1));
                 }
+                rs.close();
 
                 rs = st.executeQuery("SELECT COUNT(*) FROM tarea WHERE Estado = 'En ejecucion'");
-                while (rs.next()) {
-                    int tareasActivas = rs.getInt(1);
-                    cantidades.add(tareasActivas);
+                if (rs.next()) {
+                    cantidades.set(2, rs.getInt(1));
                 }
+                rs.close();
+
+                st.close();
             }
         } catch (SQLException e) {
             alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
@@ -103,6 +105,8 @@ public class ConsultasSQL {
                     tarea = new Tareas(idTarea, nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
                     listaTareas.add(tarea);
                 }
+                rs.close();
+                st.close();
             }
         } catch (SQLException e) {
             alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
@@ -145,7 +149,7 @@ public class ConsultasSQL {
     public boolean Guardar(Tareas tarea) {
         Boolean creado = false;
         if (con != null) {
-            String sql = "INSERT INTO tareas (Nombre, Descripcion, Pausa, Reanudar, Reiniciar, Dependencia,Instruccion, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO tarea (Nombre, Descripcion, Pausa, Reanudar, Reiniciar, Dependencia, Instruccion, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, tarea.getNombreTarea());
@@ -162,19 +166,19 @@ public class ConsultasSQL {
                     creado = true;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                alerta = new Alert(Alert.AlertType.ERROR, "Error al guardar la tarea: " + e.getMessage());
+                alerta.showAndWait();
             }
-
         }
         return creado;
     }
 
     public boolean Modificar(Tareas tarea, int id) {
-        Boolean creado = false;
+        Boolean modificado = false;
         if (con != null) {
-            String sql = "UPDATE operacion SET Nombre = ?, Descripcion = ?, Pausa = ?, Reanudar = ?, Reiniciar = ?, Dependencia = ?,Instruccion = ?, Estado = ? WHERE idTarea = ?";
+            String sql = "UPDATE tarea SET Nombre = ?, Descripcion = ?, Pausa = ?, Reanudar = ?, Reiniciar = ?, Dependencia = ?, Instruccion = ?, Estado = ? WHERE idTarea = ?";
 
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setString(1, tarea.getNombreTarea());
                 ps.setString(2, tarea.getDescripcion());
                 ps.setBoolean(3, tarea.getValorPausa());
@@ -183,18 +187,18 @@ public class ConsultasSQL {
                 ps.setString(6, tarea.getDependencia());
                 ps.setString(7, tarea.getInstruccion());
                 ps.setString(8, "Modificado");
-                ps.setInt(8, id);
+                ps.setInt(9, id);
 
-                int filasInsertadas = ps.executeUpdate();
-                if (filasInsertadas != 0) {
-                    creado = true;
+                int filasActualizadas = ps.executeUpdate();
+                if (filasActualizadas != 0) {
+                    modificado = true;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                alerta = new Alert(Alert.AlertType.ERROR, "Error al modificar la tarea: " + e.getMessage());
+                alerta.showAndWait();
             }
-
         }
-        return creado;
+        return modificado;
     }
 
     public boolean Eliminar(int id) {
@@ -209,9 +213,9 @@ public class ConsultasSQL {
                     modificado = true;
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                alerta = new Alert(Alert.AlertType.ERROR, "Error al eliminar la tarea: " + e.getMessage());
+                alerta.showAndWait();
             }
-
         }
         return modificado;
     }

@@ -1,8 +1,10 @@
 package Operaciones;
 
 import Tareas.AgregarFXML;
+import Tareas.ConsultasSQL;
 import Tareas.FilaDependencia;
-import Tareas.FilaInstruccion;
+import Tareas.Tareas;
+import java.util.List;
 import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,28 +24,20 @@ public class CrearOperacionesController {
 
     @FXML
     private Button btn_AgregarDependencia;
-
     @FXML
     private Button btn_DescartarDependencia;
-
     @FXML
     private Button btn_Guardar;
-
     @FXML
     private Button btn_Salir;
-
     @FXML
     private SplitMenuButton spm_Tareas;
-
     @FXML
     private TextField tf_NombreEntrada;
-
     @FXML
     private TextField tf_LimiteDeTareas;
-
     @FXML
     private TableView<FilaDependencia> tbv_Dependencias;
-
     @FXML
     private TableColumn<FilaDependencia, String> tbc_Dependencias;
 
@@ -75,43 +69,23 @@ public class CrearOperacionesController {
     @FXML
     void AgregarDependencia(ActionEvent event) {
         try {
-            int numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
-            String nombreDependencia = spm_Tareas.getText();
-
-            if (!nombreDependencia.isEmpty() && !nombreDependencia.equals("Tareas")) {
-                if (filasDependencia.size() >= numeroOperaciones) {
-                    Alert alerta = new Alert(Alert.AlertType.ERROR);
-                    alerta.setTitle("Error al asociar tarea");
-                    alerta.setHeaderText(null);
-                    alerta.setContentText("Ha alcanzado el límite de tareas para esta operación.");
-                    alerta.showAndWait();
-                    return;
-                }
-
-                // Validar que no se repita la dependencia
-                if (filasDependencia.stream().anyMatch(f -> f.getDependencia().equals(nombreDependencia))) {
-                    Alert alerta = new Alert(Alert.AlertType.WARNING);
-                    alerta.setTitle("Dependencia repetida");
-                    alerta.setHeaderText(null);
-                    alerta.setContentText("Esta tarea ya fue agregada como dependencia.");
-                    alerta.showAndWait();
-                    return;
-                }
-
-                FilaDependencia nueva = new FilaDependencia(nombreDependencia);
-                filasDependencia.add(nueva);
-                spm_Tareas.setText("Tareas");
+            if (tf_LimiteDeTareas.getText().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Campo vacío", "Por favor, indica un límite de tareas.");
+                return;
             }
 
-            btn_AgregarDependencia.setDisable(true);
-            btn_DescartarDependencia.setDisable(true);
+            int numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
+            String nombreDependencia = spm_Tareas.getText().trim();
+
+            if (nombreDependencia.isEmpty() || nombreDependencia.equals("Tareas")) {
+                return;
+            }
+
+            agregarDependenciaSiValida(nombreDependencia, numeroOperaciones);
+            spm_Tareas.setText("Tareas");
 
         } catch (NumberFormatException e) {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error de entrada");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se ha indicado un límite de tareas correcto.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error de entrada", "No se ha indicado un límite de tareas correcto.");
         }
     }
 
@@ -120,17 +94,12 @@ public class CrearOperacionesController {
         FilaDependencia seleccionado = tbv_Dependencias.getSelectionModel().getSelectedItem();
         if (seleccionado != null) {
             filasDependencia.remove(seleccionado);
-        } else {
-            System.out.println("No hay ningún elemento seleccionado para eliminar.");
         }
     }
 
     @FXML
     void Guardar(ActionEvent event) {
-        Operacion operacion = null;
         int numeroOperaciones = 0;
-
-        // Validar límite de tareas
         try {
             numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
         } catch (NumberFormatException e) {
@@ -154,7 +123,7 @@ public class CrearOperacionesController {
             return;
         }
 
-        operacion = new Operacion(nombreOperacion, numeroOperaciones, cadenaDependencias);
+        Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, cadenaDependencias);
         Consultassql crearTarea = new Consultassql();
         Boolean creado = crearTarea.Guardar(operacion);
 
@@ -177,5 +146,41 @@ public class CrearOperacionesController {
     void Salir(ActionEvent event) {
         Stage stage = (Stage) btn_Salir.getScene().getWindow();
         stage.close();
+    }
+
+    private void agregarDependenciaSiValida(String nombreDependencia, int limite) {
+        if (filasDependencia.stream().anyMatch(f -> f.getDependencia().equals(nombreDependencia))) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Dependencia repetida", "Esta tarea ya fue agregada como dependencia.");
+            return;
+        }
+
+        if (filasDependencia.size() >= limite) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Límite alcanzado", "Ha alcanzado el límite de tareas para esta operación.");
+            return;
+        }
+
+        FilaDependencia nueva = new FilaDependencia(nombreDependencia);
+        filasDependencia.add(nueva);
+
+        ConsultasSQL consulta = new ConsultasSQL();
+        List<Tareas> tareas = consulta.ConsultaTareas(nombreDependencia);
+        if (tareas != null && !tareas.isEmpty()) {
+            String dependenciaConsulta = tareas.get(0).getDependencia();
+            if (dependenciaConsulta != null && !dependenciaConsulta.isBlank()) {
+                String[] dependenciasHijas = dependenciaConsulta.split(",");
+                for (String hija : dependenciasHijas) {
+                    String nombreHija = hija.trim();
+                    agregarDependenciaSiValida(nombreHija, limite);
+                }
+            }
+        }
+    }
+
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String contenido) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(contenido);
+        alerta.showAndWait();
     }
 }

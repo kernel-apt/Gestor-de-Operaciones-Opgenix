@@ -3,74 +3,38 @@ package Operaciones;
 import Tareas.AgregarFXML;
 import Tareas.ConsultasSQL;
 import Tareas.FilaDependencia;
-import Tareas.FilaInstruccion;
 import Tareas.FilaTareas;
 import Tareas.Tareas;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class EditorOperacionesController {
 
-    @FXML
-    private Button btn_AgregarDependencia;
+    @FXML private Button btn_AgregarDependencia;
+    @FXML private Button btn_DescartarDependencia;
+    @FXML private Button btn_Eliminar;
+    @FXML private Button btn_Guardar;
+    @FXML private Button btn_Salir;
+    @FXML private SplitMenuButton spm_Tareas;
+    @FXML private TextArea ta_Precondiciones;
+    @FXML private TableView<FilaDependencia> tbv_Dependencias;
+    @FXML private TableColumn<FilaDependencia, String> tbc_Dependencias;
+    @FXML private TableView<FilaOperacion> tbv_Operaciones;
+    @FXML private TableColumn<FilaOperacion, String> tbc_Operaciones;
+    @FXML private TextField tf_LimiteDeTareas;
+    @FXML private TextField tf_NombreEntrada;
+    @FXML private TextField tf_Salidas;
+    @FXML private TextField tf_id;
 
-    @FXML
-    private Button btn_DescartarDependencia;
-
-    @FXML
-    private Button btn_Eliminar;
-
-    @FXML
-    private Button btn_Guardar;
-
-    @FXML
-    private Button btn_Salir;
-
-    @FXML
-    private SplitMenuButton spm_Tareas;
-
-    @FXML
-    private TextArea ta_Precondiciones;
-
-    @FXML
-    private TableView<FilaDependencia> tbv_Dependencias;
-
-    @FXML
-    private TableColumn<FilaDependencia, String> tbc_Dependencias;
-
-    @FXML
-    private TableView<FilaOperacion> tbv_Operaciones;
-    @FXML
-    private TableColumn<FilaOperacion, String> tbc_Operaciones;
-
-    @FXML
-    private TextField tf_LimiteDeTareas;
-
-    @FXML
-    private TextField tf_NombreEntrada;
-
-    @FXML
-    private TextField tf_Salidas;
-
-    @FXML
-    private TextField tf_id;
-
-    public String nombreDependencia;
     private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
     private ObservableList<FilaOperacion> filasOperaciones = FXCollections.observableArrayList();
 
@@ -78,17 +42,15 @@ public class EditorOperacionesController {
     public void initialize() {
         tbc_Dependencias.setCellValueFactory(new PropertyValueFactory<>("dependencia"));
         tbv_Dependencias.setItems(filasDependencia);
-
         tbc_Operaciones.setCellValueFactory(new PropertyValueFactory<>("operacion"));
         tbv_Operaciones.setItems(filasOperaciones);
+        cargarOperacionesEnTabla();
 
-            cargarOperacionesEnTabla();
-
-            tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    cargarDatos(newSelection);
-                }
-            });
+        tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                cargarDatos(newSelection);
+            }
+        });
 
         Agregarfxml.cargarOperacionesEnMenu(spm_Tareas, this::SeleccionarMenuItem);
         MenuItem primerItem = spm_Tareas.getItems().get(0);
@@ -109,30 +71,23 @@ public class EditorOperacionesController {
     @FXML
     void AgregarDependencia(ActionEvent event) {
         try {
-            int numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
-            String nombreDependencia = spm_Tareas.getText();
-
-            if (!nombreDependencia.isEmpty() && !nombreDependencia.equals("Tareas")) {
-                FilaDependencia nueva = new FilaDependencia(nombreDependencia);
-                filasDependencia.add(nueva);
-                if (filasDependencia.size() <= numeroOperaciones) {
-                    spm_Tareas.setText("Tareas");
-                } else {
-                    Alert alerta = new Alert(Alert.AlertType.ERROR);
-                    alerta.setTitle("Error al asociar tarea");
-                    alerta.setHeaderText(null);
-                    alerta.setContentText("Ha alcanzado el limite de tareas que puede agregar a esta operación");
-                    alerta.showAndWait();
-                }
-                btn_AgregarDependencia.setDisable(true);
-                btn_DescartarDependencia.setDisable(true);
+            if (tf_LimiteDeTareas.getText().isEmpty()) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Campo vacío", "Por favor, indica un límite de tareas.");
+                return;
             }
+
+            int numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
+            String nombreDependencia = spm_Tareas.getText().trim();
+
+            if (nombreDependencia.isEmpty() || nombreDependencia.equals("Tareas")) {
+                return;
+            }
+
+            agregarDependenciaSiValida(nombreDependencia, numeroOperaciones);
+            spm_Tareas.setText("Tareas");
+
         } catch (NumberFormatException e) {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error de entrada");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se ha indicado un límite de tareas correcto.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error de entrada", "No se ha indicado un límite de tareas correcto.");
         }
     }
 
@@ -142,11 +97,7 @@ public class EditorOperacionesController {
         if (seleccionado != null) {
             filasDependencia.remove(seleccionado);
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error de entrada");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay ningún elemento seleccionado para eliminar.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error de entrada", "No hay ningún elemento seleccionado para eliminar.");
         }
     }
 
@@ -154,7 +105,7 @@ public class EditorOperacionesController {
     void Eliminar(ActionEvent event) {
         Agregarfxml utilidades = new Agregarfxml();
         String textoId = tf_id.getText();
-         if (textoId == null || textoId.trim().isEmpty()) {
+        if (textoId == null || textoId.trim().isEmpty()) {
             utilidades.mostrarAlerta("Entrada inválida", "El campo ID no puede estar vacío.");
             return;
         }
@@ -163,24 +114,15 @@ public class EditorOperacionesController {
         Boolean creado = crearTarea.Eliminar(idOperacion);
 
         if (creado) {
-            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-            alerta.setTitle("Operación exitosa");
-            alerta.setHeaderText(null);
-            alerta.setContentText("Los datos se han eliminado correctamente.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han eliminado correctamente.");
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se pudieron eliminar los datos.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
         }
     }
 
     @FXML
     void Guardar(ActionEvent event) {
         Agregarfxml utilidades = new Agregarfxml();
-
         String nombreOperacion = tf_NombreEntrada.getText();
         String textoId = tf_id.getText();
 
@@ -209,11 +151,11 @@ public class EditorOperacionesController {
                 .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
 
-        if (!utilidades.validarDatos(nombreOperacion, numeroOperaciones, cadenaDependencias)) {
-            return; // Ya se mostró alerta en validarDatos
+        if (!utilidades.validarDatos(nombreOperacion.trim(), numeroOperaciones, cadenaDependencias)) {
+            return;
         }
 
-        Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, cadenaDependencias);
+        Operacion operacion = new Operacion(nombreOperacion.trim(), numeroOperaciones, cadenaDependencias);
         Consultassql consultas = new Consultassql();
         boolean creado = consultas.Modificar(operacion, idOperacion);
 
@@ -232,7 +174,6 @@ public class EditorOperacionesController {
 
     private void cargarOperacionesEnTabla() {
         filasOperaciones.clear();
-
         Consultassql consultas = new Consultassql();
         ArrayList<String> listaOperacion = consultas.ListaOperaciones();
 
@@ -251,8 +192,6 @@ public class EditorOperacionesController {
         if (!comparar.equals("No existen operaciones actualmente") && !comparar.equals("")) {
             Consultassql consultaDetalleOperacion = new Consultassql();
             List<Operacion> operacionesConsultadas = consultaDetalleOperacion.ConsultaOperacion();
-
-            // Buscar la operación que coincida con el nombre seleccionado
             Operacion operacionConsultada = null;
             for (Operacion op : operacionesConsultadas) {
                 if (op.getNombreOperacion().equals(comparar)) {
@@ -262,14 +201,10 @@ public class EditorOperacionesController {
             }
 
             if (operacionConsultada != null) {
-                // Cargar datos en los campos de texto
                 tf_NombreEntrada.setText(operacionConsultada.getNombreOperacion());
                 tf_id.setText(String.valueOf(operacionConsultada.getId()));
-
-                // Limpiar lista previa de dependencias
                 filasDependencia.clear();
 
-                // Procesar y cargar las dependencias (tareas asociadas)
                 String dependenciaConsulta = operacionConsultada.getTareasAsociadas();
                 if (dependenciaConsulta != null && !dependenciaConsulta.trim().isEmpty()) {
                     String[] dependencias = dependenciaConsulta.split(",");
@@ -278,20 +213,46 @@ public class EditorOperacionesController {
                     }
                 }
             } else {
-                // Mostrar alerta si la operación no se encuentra
-                Alert alerta = new Alert(Alert.AlertType.ERROR);
-                alerta.setTitle("Error");
-                alerta.setHeaderText(null);
-                alerta.setContentText("La operación seleccionada no existe en la base de datos.");
-                alerta.showAndWait();
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "La operación seleccionada no existe en la base de datos.");
             }
         } else {
-            // Mostrar alerta si no hay operaciones creadas o el nombre es inválido
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay operaciones creadas");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay operaciones creadas");
         }
+    }
+
+    private void agregarDependenciaSiValida(String nombreDependencia, int limite) {
+        if (filasDependencia.stream().anyMatch(f -> f.getDependencia().equals(nombreDependencia))) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Dependencia repetida", "Esta tarea ya fue agregada como dependencia.");
+            return;
+        }
+
+        if (filasDependencia.size() >= limite) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Límite alcanzado", "Ha alcanzado el límite de tareas para esta operación.");
+            return;
+        }
+
+        FilaDependencia nueva = new FilaDependencia(nombreDependencia);
+        filasDependencia.add(nueva);
+
+        ConsultasSQL consulta = new ConsultasSQL();
+        List<Tareas> tareas = consulta.ConsultaTareas(nombreDependencia);
+        if (tareas != null && !tareas.isEmpty()) {
+            String dependenciaConsulta = tareas.get(0).getDependencia();
+            if (dependenciaConsulta != null && !dependenciaConsulta.isBlank()) {
+                String[] dependenciasHijas = dependenciaConsulta.split(",");
+                for (String hija : dependenciasHijas) {
+                    String nombreHija = hija.trim();
+                    agregarDependenciaSiValida(nombreHija, limite);
+                }
+            }
+        }
+    }
+
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String contenido) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(contenido);
+        alerta.showAndWait();
     }
 }

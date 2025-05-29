@@ -7,7 +7,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class CrearTareaController {
@@ -46,6 +45,11 @@ public class CrearTareaController {
     private TableColumn<FilaInstruccion, String> tbc_Instrucciones;
     @FXML
     private TableColumn<FilaDependencia, String> tbc_Dependencias;
+    @FXML
+    private ObservableList<FilaTareas> tareasObservable = FXCollections.observableArrayList();
+
+    @FXML
+    private TableView<FilaTareas> tbv_Tareas;
 
     @FXML
     private TextField tf_Descripcion;
@@ -54,11 +58,8 @@ public class CrearTareaController {
     @FXML
     private TextField tf_NombreTarea;
 
-    public String nombreInstruccion;
-    public String nombreDependencia;
     private ObservableList<FilaInstruccion> filasInstruccion = FXCollections.observableArrayList();
     private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
-    private ArrayList<String> ListaTareas;
 
     @FXML
     public void initialize() {
@@ -68,10 +69,7 @@ public class CrearTareaController {
         tbv_Dependencias.setItems(filasDependencia);
 
         AgregarFXML.cargarTareasEnMenu(spm_Tareas, this::SeleccionarMenuItem);
-        MenuItem primerItem = spm_Tareas.getItems().get(0);
-        String textoMenuItem = primerItem.getText();
-
-        if (textoMenuItem.equals("No hay tareas creadas")) {
+        if (spm_Tareas.getItems().get(0).getText().equals("No hay tareas creadas")) {
             btn_AgregarDependencia.setDisable(true);
             btn_DescartarDependencia.setDisable(true);
         }
@@ -79,26 +77,24 @@ public class CrearTareaController {
 
     @FXML
     private void SeleccionarMenuItem(ActionEvent event) {
-        MenuItem fuente = (MenuItem) event.getSource();
-        spm_Tareas.setText(fuente.getText());
+        MenuItem item = (MenuItem) event.getSource();
+        spm_Tareas.setText(item.getText());
     }
 
     @FXML
-    void AgregarInstruccion(ActionEvent event) {
-        nombreInstruccion = tf_NombreInstruccion.getText();
-        if (!nombreInstruccion.isEmpty()) {
-            FilaInstruccion nueva = new FilaInstruccion(nombreInstruccion);
-            filasInstruccion.add(nueva);
+    private void AgregarInstruccion(ActionEvent event) {
+        String instruccion = tf_NombreInstruccion.getText();
+        if (!instruccion.isEmpty()) {
+            filasInstruccion.add(new FilaInstruccion(instruccion));
             tf_NombreInstruccion.clear();
         }
     }
 
     @FXML
-    void AgregarDependencia(ActionEvent event) {
-        nombreDependencia = spm_Tareas.getText();
-        if (!nombreDependencia.isEmpty() && !nombreDependencia.equals("Tareas")) {
-            FilaDependencia nueva = new FilaDependencia(nombreDependencia);
-            filasDependencia.add(nueva);
+    private void AgregarDependencia(ActionEvent event) {
+        String dependencia = spm_Tareas.getText();
+        if (!dependencia.isEmpty() && !dependencia.equals("Tareas")) {
+            filasDependencia.add(new FilaDependencia(dependencia));
             spm_Tareas.setText("Tareas");
             btn_AgregarDependencia.setDisable(true);
             btn_DescartarDependencia.setDisable(true);
@@ -106,90 +102,103 @@ public class CrearTareaController {
     }
 
     @FXML
-    void Descartar(ActionEvent event) {
-        tf_NombreTarea.setText(null);
-        tf_Descripcion.setText(null);
-        tf_NombreInstruccion.setText(null);
-        filasInstruccion.clear();
-        filasDependencia.clear();
+    private void Descartar(ActionEvent event) {
+        limpiarFormulario();
     }
 
     @FXML
-    void DescartarDependencia(ActionEvent event) {
-        FilaDependencia seleccionado = tbv_Dependencias.getSelectionModel().getSelectedItem();
-        if (seleccionado != null) {
-            filasDependencia.remove(seleccionado);
+    private void DescartarDependencia(ActionEvent event) {
+        FilaDependencia seleccionada = tbv_Dependencias.getSelectionModel().getSelectedItem();
+        if (seleccionada != null) {
+            filasDependencia.remove(seleccionada);
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay ningún elemento seleccionado.");
-            alerta.showAndWait();
+            mostrarAlerta("Error", "No hay ningún elemento seleccionado.", Alert.AlertType.ERROR);
         }
     }
 
     @FXML
-    void DescartarInstruccion(ActionEvent event) {
-        FilaInstruccion seleccionado = tbv_Instrucciones.getSelectionModel().getSelectedItem();
-        if (seleccionado != null) {
-            filasInstruccion.remove(seleccionado);
+    private void DescartarInstruccion(ActionEvent event) {
+        FilaInstruccion seleccionada = tbv_Instrucciones.getSelectionModel().getSelectedItem();
+        if (seleccionada != null) {
+            filasInstruccion.remove(seleccionada);
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay ningún elemento seleccionado.");
-            alerta.showAndWait();
+            mostrarAlerta("Error", "No hay ningún elemento seleccionado.", Alert.AlertType.ERROR);
         }
     }
 
     @FXML
-    void Guardar(ActionEvent event) {
-        Tareas tarea = null;
-        AgregarFXML validar = new AgregarFXML();
+    private void Guardar(ActionEvent event) {
+        AgregarFXML validador = new AgregarFXML();
 
         String nombreTarea = tf_NombreTarea.getText();
         String descripcion = tf_Descripcion.getText();
-        Boolean valorPausa = cb_Pausa.isSelected();
-        Boolean valorReanudar = cb_Reanudar.isSelected();
-        Boolean valorReiniciar = cb_Reiniciar.isSelected();
+        boolean pausa = cb_Pausa.isSelected();
+        boolean reanudar = cb_Reanudar.isSelected();
+        boolean reiniciar = cb_Reiniciar.isSelected();
 
-        String cadenaInstrucciones = filasInstruccion.stream()
+        String instrucciones = filasInstruccion.stream()
                 .map(FilaInstruccion::getInstruccion)
                 .collect(Collectors.joining(","));
 
-        String cadenaDependencias = filasDependencia.stream()
+        String dependencias = filasDependencia.stream()
                 .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
 
-        boolean validacion= validar.validarCampos(nombreTarea, descripcion, cadenaInstrucciones);
-
-        if (validacion) {
-            tarea = new Tareas(nombreTarea, descripcion, valorPausa, valorReanudar, valorReiniciar, cadenaDependencias, cadenaInstrucciones);
-            ConsultasSQL crearTarea = new ConsultasSQL();
-            boolean creado = crearTarea.Guardar(tarea);
-
-            Alert alerta = new Alert(creado ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR);
-            alerta.setTitle(creado ? "Operación exitosa" : "Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText(creado ? "Los datos se han guardado correctamente." : "No se pudieron guardar los datos.");
-            alerta.showAndWait();
+        if (!validador.validarCampos(nombreTarea, descripcion, instrucciones)) {
+            return;
         }
+
+        Tareas tarea = new Tareas(nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencias, instrucciones);
+        ConsultasSQL consulta = new ConsultasSQL();
+        boolean exito = consulta.Guardar(tarea);
+
+        mostrarAlerta(
+                exito ? "Operación exitosa" : "Error",
+                exito ? "Los datos se han guardado correctamente." : "No se pudieron guardar los datos.",
+                exito ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR
+        );
+
+        limpiarFormulario();
+        Stage stage = (Stage) btn_Salir.getScene().getWindow();
+        stage.close();
     }
 
     @FXML
-    void Pausa(ActionEvent event) {
-        boolean seleccionada = cb_Pausa.isSelected();
-        cb_Reanudar.setDisable(!seleccionada);
-        cb_Reiniciar.setDisable(!seleccionada);
-        if (!seleccionada) {
+    private void Pausa(ActionEvent event) {
+        boolean activa = cb_Pausa.isSelected();
+        cb_Reanudar.setDisable(!activa);
+        cb_Reiniciar.setDisable(!activa);
+        if (!activa) {
             cb_Reanudar.setSelected(false);
             cb_Reiniciar.setSelected(false);
         }
     }
 
     @FXML
-    void Salir(ActionEvent event) {
+    private void Salir(ActionEvent event) {
+        limpiarFormulario();
         Stage stage = (Stage) btn_Salir.getScene().getWindow();
         stage.close();
+    }
+
+    private void limpiarFormulario() {
+        tf_NombreTarea.clear();
+        tf_Descripcion.clear();
+        tf_NombreInstruccion.clear();
+        filasInstruccion.clear();
+        filasDependencia.clear();
+        cb_Pausa.setSelected(false);
+        cb_Reanudar.setSelected(false);
+        cb_Reiniciar.setSelected(false);
+        cb_Reanudar.setDisable(true);
+        cb_Reiniciar.setDisable(true);
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
     }
 }

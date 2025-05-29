@@ -20,7 +20,7 @@
     <top>
         <FlowPane prefHeight="27.0" prefWidth="760.0" style="-fx-background-color: #F0EBF7;" BorderPane.alignment="CENTER">
             <children>
-                <MenuBar prefHeight="25.0" prefWidth="1026.0">
+                <MenuBar prefHeight="25.0" prefWidth="989.0">
                     <menus>
                         <Menu mnemonicParsing="false" text="Operaciones">
                             <items>
@@ -41,7 +41,8 @@
                         </Menu>
                     </menus>
                 </MenuBar>
-                <Button mnemonicParsing="false" text="Cerrar" />
+            <Button fx:id="btn_Refrescar" mnemonicParsing="false" onAction="#RefrescarPantalla" prefHeight="26.0" prefWidth="65.0" text="Refrescar" />
+                <Button fx:id="btnCerrar" mnemonicParsing="false" onAction="#Salir" prefHeight="25.0" prefWidth="71.0" text="Cerrar" />
             </children>
         </FlowPane>
     </top>
@@ -53,8 +54,8 @@
                 <TextField fx:id="tf_OperacionesActivas" layoutX="157.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
                 <Label layoutX="211.0" layoutY="11.0" text="de:" />
                 <TextField fx:id="tf_TotalOperaciones" layoutX="234.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
-                <Label layoutX="879.0" layoutY="11.0" text="Tareas en ejecución:" />
-                <TextField fx:id="tf_TareasEjecucion" layoutX="999.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
+                <Label layoutX="955.0" layoutY="11.0" text="Tareas en ejecución:" />
+                <TextField fx:id="tf_TareasEjecucion" layoutX="1069.0" layoutY="7.0" prefHeight="25.0" prefWidth="44.0" />
             </children>
         </Pane>
     </bottom>
@@ -74,11 +75,11 @@
                      </children></AnchorPane>
                     </content>
                 </ScrollPane>
-                <ScrollPane prefHeight="315.0" prefWidth="217.0">
+                <ScrollPane prefHeight="294.0" prefWidth="256.0">
                     <content>
-                        <AnchorPane fx:id="ap_TareasDeOperaciones" prefHeight="315.0" prefWidth="241.0">
+                        <AnchorPane fx:id="ap_TareasDeOperaciones" prefHeight="291.0" prefWidth="241.0">
                      <children>
-                        <TableView fx:id="tbv_Tareas" prefHeight="316.0" prefWidth="237.0">
+                        <TableView fx:id="tbv_Tareas" prefHeight="291.0" prefWidth="237.0">
                           <columns>
                             <TableColumn fx:id="tbc_Tareas" prefWidth="235.0" text="Tareas" />
                           </columns>
@@ -86,6 +87,12 @@
                      </children></AnchorPane>
                     </content>
                 </ScrollPane>
+            <AnchorPane prefHeight="48.0" prefWidth="256.0">
+               <children>
+                  <Button fx:id="btn_Detener" layoutX="159.0" layoutY="8.0" minWidth="66.0" mnemonicParsing="false" onAction="#Detener" prefHeight="25.0" text="Detener" />
+                <Button fx:id="btn_Ejecutar" layoutY="8.0" mnemonicParsing="false" onAction="#Ejecutar" prefHeight="25.0" prefWidth="128.0" text="Ejecutar operacion" />
+               </children>
+            </AnchorPane>
             </children>
         </VBox>
     </left>
@@ -95,7 +102,7 @@
          <content>
             <ScrollPane prefHeight="634.0" prefWidth="857.0">
                <content>
-                  <FlowPane prefHeight="631.0" prefWidth="854.0" />
+                  <FlowPane fx:id="fp_Gestor" prefHeight="631.0" prefWidth="854.0" />
                </content>
             </ScrollPane>
          </content>

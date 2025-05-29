@@ -1,86 +1,105 @@
-package gestorDeOperaciones; // Paquete que contiene la clase principal de la aplicación
+package gestorDeOperaciones;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-
 public class GestorDeOperaciones extends Application {
 
-    private static Connection con; // Variable estática que almacena la conexión a la base de datos
+    private static Connection con;
 
     @Override
     public void start(Stage stage) {
         try {
-            conectarBaseDatos(); // Llama al método para establecer conexión con la base de datos
+            conectarBaseDatos();
+            inicializarTablas();
 
-            // Carga el archivo FXML que define la interfaz gráfica
             FXMLLoader loader = new FXMLLoader(getClass().getResource("PantallaPrincipal.fxml"));
-            Parent root = loader.load(); // Crea el nodo raíz a partir del archivo FXML
+            Parent root = loader.load();
 
-            // Configurar escena
-            Scene scene = new Scene(root); // Crea una nueva escena con el nodo raíz cargado
-            stage.setTitle("Inicio"); // Establece el título de la ventana principal
-            stage.setScene(scene); // Asigna la escena a la ventana principal
-            stage.show(); // Muestra la ventana al usuario
+            Scene scene = new Scene(root);
+            stage.setTitle("Inicio");
+            stage.setScene(scene);
+            stage.show();
         } catch (Exception e) {
-            System.err.println("Error al iniciar la aplicación: " + e.getMessage()); // Manejo de errores en caso de fallos al iniciar
-            e.printStackTrace(); // Imprime el stack trace del error en consola
+            System.err.println("Error al iniciar la aplicación: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Método que establece la conexión a la base de datos MySQL.
-     */
     private void conectarBaseDatos() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // Carga el driver de MySQL para establecer conexión
+            Class.forName("org.h2.Driver");
 
-            // Establece conexión a la base de datos 'mydatabase'
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/gestiondeoperaciones?useTimezone=true&serverTimezone=UTC", "root", "Zweihander128");
-            System.out.println("Conexión exitosa a la base de datos 'mydatabase'"); // Mensaje de éxito al conectar a la base de datos
+            String url = "jdbc:h2:./data/gestiondeoperaciones";
+
+            String user = "sa";
+            String password = "";
+
+            con = DriverManager.getConnection(url, user, password);
+            System.out.println("Conexión exitosa a la base de datos H2");
         } catch (SQLException e) {
-            System.err.println("Error en la conexión a MySQL: " + e.getMessage()); // Manejo de errores en caso de fallos en la conexión SQL
-            e.printStackTrace(); // Imprime el stack trace del error en consola
+            System.err.println("Error en la conexión a H2: " + e.getMessage());
+            e.printStackTrace();
         } catch (ClassNotFoundException e) {
-            System.err.println("Error: No se pudo cargar el driver de MySQL"); // Manejo de errores si no se encuentra el driver MySQL
-            e.printStackTrace(); // Imprime el stack trace del error en consola
+            System.err.println("Error: No se pudo cargar el driver de H2");
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Método estático que devuelve la conexión a la base de datos.
-     *
-     * @return La conexión a la base de datos.
-     */
+    private void inicializarTablas() {
+        String sqlOperacion = "CREATE TABLE IF NOT EXISTS operacion ("
+                + "idOperacion INT AUTO_INCREMENT PRIMARY KEY, "
+                + "Nombre VARCHAR(45) NOT NULL UNIQUE, "
+                + "Limite INT NOT NULL, "
+                + "Tareas CLOB, "
+                + "Estado VARCHAR(45) NOT NULL)";
+
+        String sqlTarea = "CREATE TABLE IF NOT EXISTS tarea ("
+                + "idTarea INT AUTO_INCREMENT PRIMARY KEY, "
+                + "Nombre VARCHAR(45) NOT NULL UNIQUE, "
+                + "Descripcion VARCHAR(45) NOT NULL, "
+                + "Pausa BOOLEAN NOT NULL, "
+                + "Reanudar BOOLEAN NOT NULL, "
+                + "Reiniciar BOOLEAN NOT NULL, "
+                + "Dependencia VARCHAR(45), "
+                + "Instruccion VARCHAR(45) NOT NULL, "
+                + "Estado VARCHAR(45) NOT NULL)";
+
+        try (Statement stmt = con.createStatement()) {
+            stmt.execute(sqlOperacion);
+            stmt.execute(sqlTarea);
+            System.out.println("Tablas inicializadas o ya existentes.");
+        } catch (SQLException e) {
+            System.err.println("Error al crear tablas: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public static Connection getConnection() {
-        return con; // Retorna la conexión a la base de datos
+        return con;
     }
 
     @Override
     public void stop() {
         try {
-            if (con != null && !con.isClosed()) { // Verifica si hay una conexión abierta antes de cerrarla
-                con.close(); // Cierra la conexión a la base de datos
-                System.out.println("Conexión cerrada."); // Mensaje indicando que se ha cerrado la conexión exitosamente
+            if (con != null && !con.isClosed()) {
+                con.close();
+                System.out.println("Conexión cerrada.");
             }
         } catch (SQLException e) {
-            System.err.println("Error al cerrar la conexión: " + e.getMessage()); // Manejo de errores al cerrar la conexión SQL
-            e.printStackTrace(); // Imprime el stack trace del error en consola
+            System.err.println("Error al cerrar la conexión: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Método principal que inicia la aplicación JavaFX.
-     *
-     * @param args Argumentos pasados desde la línea de comandos.
-     */
     public static void main(String[] args) {
-         launch(args); // Inicia la aplicación JavaFX
+        launch(args);
     }
 }
