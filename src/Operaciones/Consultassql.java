@@ -221,7 +221,32 @@ public class Consultassql {
     public List<Operacion> ConsultaOperacion(String consultaOperacion) {
         List<Operacion> operaciones = new ArrayList<>();
         if (con != null) {
-            String sql = "SELECT * FROM operacion WHERE Nombre = ? AND Estado = 'En ejecucion'";
+            String sql = "SELECT * FROM operacion WHERE Nombre = ?";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, consultaOperacion);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int idOperacion = rs.getInt("idOperacion");
+                        String nombreOperacion = rs.getString("Nombre");
+                        int limiteTareas = rs.getInt("Limite");
+                        String tareas = rs.getString("Tareas");
+                        Operacion operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
+                        operaciones.add(operacion);
+                    }
+                }
+            } catch (SQLException e) {
+                alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
+                alerta.showAndWait();
+            }
+        }
+        return operaciones;
+    }
+    
+    
+        public List<Operacion> ConsultaOperacionActiva(String consultaOperacion) {
+        List<Operacion> operaciones = new ArrayList<>();
+        if (con != null) {
+            String sql = "SELECT * FROM operacion WHERE Nombre = ? AND Estado ='En ejecucion'";
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setString(1, consultaOperacion);
                 try (ResultSet rs = ps.executeQuery()) {

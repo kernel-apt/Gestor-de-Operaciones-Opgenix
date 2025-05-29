@@ -15,6 +15,23 @@ public class Operacion {
     private String nombreOperacion;
     private int numeroTareas;
     private String tareasAsociadas;
+    private String estado;
+
+    public Operacion(int id, String nombreOperacion, int numeroTareas, String tareasAsociadas, String estado) {
+        this.id = id;
+        this.nombreOperacion = nombreOperacion;
+        this.numeroTareas = numeroTareas;
+        this.tareasAsociadas = tareasAsociadas;
+        this.estado = estado;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
 
     public Operacion(int id, String nombreOperacion, int numeroTareas, String tareasAsociadas) {
         this.id = id;

@@ -105,6 +105,7 @@ public class VisorTareasController {
         tbv_Tareas.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 cargarDatos(newSelection);
+                setControlesHabilitados(true);
             }
         });
 
@@ -116,6 +117,7 @@ public class VisorTareasController {
             btn_AgregarDependencia.setDisable(true);
             btn_DescartarDependencia.setDisable(true);
         }
+        setControlesHabilitados(false);
 
     }
 
@@ -353,4 +355,21 @@ public class VisorTareasController {
         }
     }
 
+    private void setControlesHabilitados(boolean habilitado) {
+        btn_AgregarDependencia.setDisable(!habilitado);
+        btn_AgregarInstruccion.setDisable(!habilitado);
+        btn_DescartarDependencia.setDisable(!habilitado);
+        btn_DescartarInstruccion.setDisable(!habilitado);
+        btn_Guardar.setDisable(!habilitado);
+        btn_Eliminar.setDisable(!habilitado);
+
+        cb_Pausa.setDisable(!habilitado);
+        spm_Tareas.setDisable(!habilitado);
+
+        tf_Descripcion.setDisable(!habilitado);
+        tf_NombreInstruccion.setDisable(!habilitado);
+        tf_NombreTarea.setDisable(!habilitado);
+        tf_idTarea.setDisable(!habilitado);
+
+    }
 }

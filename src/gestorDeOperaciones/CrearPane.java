@@ -21,7 +21,7 @@ public class CrearPane {
                 ruta = "/Tareas/" + id + ".fxml";
                 break;
             case "AcercaDe":
-                ruta = "/" + id + ".fxml";
+                ruta = "/FXML/AcercaDe.fxml";
                 break;
             default:
                 ruta= "Acción no reconocida: " + id;

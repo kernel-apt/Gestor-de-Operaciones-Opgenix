@@ -19,27 +19,43 @@ import java.util.stream.Collectors;
 
 public class EditorOperacionesController {
 
-    @FXML private Button btn_AgregarDependencia;
-    @FXML private Button btn_DescartarDependencia;
-    @FXML private Button btn_Eliminar;
-    @FXML private Button btn_Guardar;
-    @FXML private Button btn_Salir;
-    @FXML private SplitMenuButton spm_Tareas;
-    @FXML private TextArea ta_Precondiciones;
-    @FXML private TableView<FilaDependencia> tbv_Dependencias;
-    @FXML private TableColumn<FilaDependencia, String> tbc_Dependencias;
-    @FXML private TableView<FilaOperacion> tbv_Operaciones;
-    @FXML private TableColumn<FilaOperacion, String> tbc_Operaciones;
-    @FXML private TextField tf_LimiteDeTareas;
-    @FXML private TextField tf_NombreEntrada;
-    @FXML private TextField tf_Salidas;
-    @FXML private TextField tf_id;
+    @FXML
+    private Button btn_AgregarDependencia;
+    @FXML
+    private Button btn_DescartarDependencia;
+    @FXML
+    private Button btn_Eliminar;
+    @FXML
+    private Button btn_Guardar;
+    @FXML
+    private Button btn_Salir;
+    @FXML
+    private SplitMenuButton spm_Tareas;
+    @FXML
+    private TextArea ta_Precondiciones;
+    @FXML
+    private TableView<FilaDependencia> tbv_Dependencias;
+    @FXML
+    private TableColumn<FilaDependencia, String> tbc_Dependencias;
+    @FXML
+    private TableView<FilaOperacion> tbv_Operaciones;
+    @FXML
+    private TableColumn<FilaOperacion, String> tbc_Operaciones;
+    @FXML
+    private TextField tf_LimiteDeTareas;
+    @FXML
+    private TextField tf_NombreEntrada;
+    @FXML
+    private TextField tf_Salidas;
+    @FXML
+    private TextField tf_id;
 
     private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
     private ObservableList<FilaOperacion> filasOperaciones = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
+
         tbc_Dependencias.setCellValueFactory(new PropertyValueFactory<>("dependencia"));
         tbv_Dependencias.setItems(filasDependencia);
         tbc_Operaciones.setCellValueFactory(new PropertyValueFactory<>("operacion"));
@@ -49,7 +65,9 @@ public class EditorOperacionesController {
         tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 cargarDatos(newSelection);
+                setControlesHabilitados(true);
             }
+
         });
 
         Agregarfxml.cargarOperacionesEnMenu(spm_Tareas, this::SeleccionarMenuItem);
@@ -60,6 +78,8 @@ public class EditorOperacionesController {
             btn_AgregarDependencia.setDisable(true);
             btn_DescartarDependencia.setDisable(true);
         }
+
+        setControlesHabilitados(false);
     }
 
     @FXML
@@ -181,8 +201,6 @@ public class EditorOperacionesController {
             for (String operacion : listaOperacion) {
                 filasOperaciones.add(new FilaOperacion(operacion));
             }
-        } else {
-            filasOperaciones.add(new FilaOperacion("No existen operaciones actualmente"));
         }
     }
 
@@ -255,4 +273,17 @@ public class EditorOperacionesController {
         alerta.setContentText(contenido);
         alerta.showAndWait();
     }
+
+    private void setControlesHabilitados(boolean habilitado) {
+        btn_AgregarDependencia.setDisable(!habilitado);
+        btn_DescartarDependencia.setDisable(!habilitado);
+        btn_Eliminar.setDisable(!habilitado);
+        btn_Guardar.setDisable(!habilitado);
+        spm_Tareas.setDisable(!habilitado);
+        ta_Precondiciones.setDisable(!habilitado);
+        tf_LimiteDeTareas.setDisable(!habilitado);
+        tf_NombreEntrada.setDisable(!habilitado);
+        tf_Salidas.setDisable(!habilitado);
+    }
+
 }
