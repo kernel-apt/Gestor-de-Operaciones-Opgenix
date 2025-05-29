@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.effect.Blend?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="466.0" prefWidth="662.0" style="-fx-background-color: #e6f0f8;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1">
+    
+    <!-- Título -->
+    <Label layoutX="20.0" layoutY="20.0" style="-fx-font-weight: bold;" text="Gestor de Operaciones">
+      <font>
+         <Font name="Comic Sans MS" size="14.0" />
+      </font></Label>
+
+    <!-- Botón Acerca de -->
+    <Button layoutX="135.0" layoutY="47.0" prefHeight="25.0" prefWidth="82.0" style="-fx-background-color: #2ecc71;" text="Acerca de">
+      <font>
+         <Font name="System Bold Italic" size="12.0" />
+      </font></Button>
+
+    <!-- Botón Cerrar Gestor -->
+    <Button layoutX="528.0" layoutY="47.0" style="-fx-background-color: #e74c3c;" text="Cerrar Gestor">
+      <font>
+         <Font name="Comic Sans MS Bold Italic" size="12.0" />
+      </font></Button>
+
+    <!-- MenuButton de operaciones -->
+    <MenuButton layoutX="28.0" layoutY="47.0" style="-fx-background-color: #2ecc71;" text="Operación">
+        <items>
+            <MenuItem text="Nueva" />
+            <MenuItem text="Editar" />
+            <MenuItem text="Eliminar" />
+        </items>
+      <font>
+         <Font name="System Bold Italic" size="12.0" />
+      </font>
+    </MenuButton>
+
+    <!-- Sección de operaciones -->
+    <Label layoutX="20.0" layoutY="119.0" style="-fx-font-weight: bold;" text="Operaciones">
+      <font>
+         <Font size="14.0" />
+      </font></Label>
+    <VBox alignment="TOP_RIGHT" layoutX="9.0" layoutY="151.0" prefHeight="126.0" prefWidth="115.0" spacing="10.0" style="-fx-background-color: #fdebd0;">
+        <children>
+         <Region prefHeight="0.0" prefWidth="115.0" />
+            <Button maxWidth="150.0" text="Operación 01" />
+            <Button maxWidth="150.0" prefHeight="25.0" prefWidth="101.0" text="Operación 02" />
+            <Button maxWidth="150.0" text="Operación 03" />
+        </children>
+      <opaqueInsets>
+         <Insets />
+      </opaqueInsets>
+      <effect>
+         <Blend>
+            <topInput>
+               <Blend />
+            </topInput>
+         </Blend>
+      </effect>
+      
+    </VBox>
+
+    <!-- Sección de tareas asociadas -->
+    <Label layoutX="7.0" layoutY="290.0" style="-fx-font-weight: bold;" text="Tareas Asociadas">
+      <font>
+         <Font size="14.0" />
+      </font></Label>
+    <VBox layoutX="9.0" layoutY="312.0" prefHeight="126.0" prefWidth="115.0" spacing="10.0" style="-fx-background-color: #fdebd0;">
+        <children>
+         <Region prefHeight="0.0" prefWidth="115.0" />
+            <Button maxWidth="150.0" text="Tarea 01" />
+            <Button maxWidth="150.0" text="Tarea 02" />
+            <Button maxWidth="150.0" text="Tarea 03" />
+        </children>
+    </VBox>
+
+    <!-- Panel central (zona blanca de contenido) -->
+    <Pane layoutX="135.0" layoutY="98.0" prefHeight="319.0" prefWidth="491.0" style="-fx-background-color: #bfbfbf;" />
+
+    <!-- Estado en la parte inferior -->
+    <HBox layoutX="174.0" layoutY="429.0" prefHeight="17.0" prefWidth="414.0" spacing="20.0" style="-fx-background-color: #fdebd0;">
+        <children>
+            <Label text="Operaciones en ejecución:" />
+            <Label text="Tareas en ejecución:" />
+            <Label text="Total de Operaciones:" />
+        </children>
+    </HBox>
+
+</AnchorPane>
