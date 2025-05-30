@@ -1,9 +1,13 @@
-package Operaciones;
+package Controladores;
 
+import ConsultasSQL.ConsultasOperaciones;
+import Objetos.Operacion;
+import Objetos.FilaOperacion;
 import Tareas.AgregarFXML;
-import Tareas.ConsultasSQL;
-import Tareas.FilaDependencia;
-import Tareas.FilaTareas;
+import ConsultasSQL.ConsultasTareas;
+import Objetos.FilaDependencia;
+import Objetos.FilaTareas;
+import Operaciones.Agregarfxml;
 import Tareas.Tareas;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -130,7 +134,7 @@ public class EditorOperacionesController {
             return;
         }
         int idOperacion = Integer.parseInt(tf_id.getText());
-        Consultassql crearTarea = new Consultassql();
+        ConsultasOperaciones crearTarea = new ConsultasOperaciones();
         Boolean creado = crearTarea.Eliminar(idOperacion);
 
         if (creado) {
@@ -138,6 +142,8 @@ public class EditorOperacionesController {
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
         }
+        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
+
     }
 
     @FXML
@@ -147,7 +153,8 @@ public class EditorOperacionesController {
         String textoId = tf_id.getText();
 
         if (textoId == null || textoId.trim().isEmpty()) {
-            utilidades.mostrarAlerta("Entrada inválida", "El campo ID no puede estar vacío.");
+             mostrarAlerta(Alert.AlertType.ERROR, "Entrada inválida", "El campo ID no puede estar vacío.");
+           
             return;
         }
 
@@ -155,7 +162,7 @@ public class EditorOperacionesController {
         try {
             idOperacion = Integer.parseInt(textoId);
         } catch (NumberFormatException e) {
-            utilidades.mostrarAlerta("Entrada inválida", "El ID debe ser un número.");
+            mostrarAlerta(Alert.AlertType.ERROR,"Entrada inválida", "El ID debe ser un número.");
             return;
         }
 
@@ -163,7 +170,7 @@ public class EditorOperacionesController {
         try {
             numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
         } catch (NumberFormatException e) {
-            utilidades.mostrarAlerta("Entrada inválida", "No se ha indicado un límite de tareas correcto.");
+            mostrarAlerta(Alert.AlertType.INFORMATION,"Entrada inválida", "No se ha indicado un límite de tareas correcto.");
             return;
         }
 
@@ -176,14 +183,16 @@ public class EditorOperacionesController {
         }
 
         Operacion operacion = new Operacion(nombreOperacion.trim(), numeroOperaciones, cadenaDependencias);
-        Consultassql consultas = new Consultassql();
+        ConsultasOperaciones consultas = new ConsultasOperaciones();
         boolean creado = consultas.Modificar(operacion, idOperacion);
 
         if (creado) {
-            utilidades.mostrarAlerta("Operación exitosa", "Los datos se han guardado correctamente.");
+            mostrarAlerta(Alert.AlertType.INFORMATION,"Operación exitosa", "Los datos se han guardado correctamente.");
         } else {
-            utilidades.mostrarAlerta("Error", "No se pudieron guardar los datos.");
+            mostrarAlerta(Alert.AlertType.ERROR,"Error", "No se pudieron guardar los datos.");
         }
+        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
+
     }
 
     @FXML
@@ -194,7 +203,7 @@ public class EditorOperacionesController {
 
     private void cargarOperacionesEnTabla() {
         filasOperaciones.clear();
-        Consultassql consultas = new Consultassql();
+        ConsultasOperaciones consultas = new ConsultasOperaciones();
         ArrayList<String> listaOperacion = consultas.ListaOperaciones();
 
         if (listaOperacion != null && !listaOperacion.isEmpty()) {
@@ -208,7 +217,7 @@ public class EditorOperacionesController {
         String comparar = operacionSeleccionada.getOperacion();
 
         if (!comparar.equals("No existen operaciones actualmente") && !comparar.equals("")) {
-            Consultassql consultaDetalleOperacion = new Consultassql();
+            ConsultasOperaciones consultaDetalleOperacion = new ConsultasOperaciones();
             List<Operacion> operacionesConsultadas = consultaDetalleOperacion.ConsultaOperacion();
             Operacion operacionConsultada = null;
             for (Operacion op : operacionesConsultadas) {
@@ -252,7 +261,7 @@ public class EditorOperacionesController {
         FilaDependencia nueva = new FilaDependencia(nombreDependencia);
         filasDependencia.add(nueva);
 
-        ConsultasSQL consulta = new ConsultasSQL();
+        ConsultasTareas consulta = new ConsultasTareas();
         List<Tareas> tareas = consulta.ConsultaTareas(nombreDependencia);
         if (tareas != null && !tareas.isEmpty()) {
             String dependenciaConsulta = tareas.get(0).getDependencia();
@@ -266,6 +275,7 @@ public class EditorOperacionesController {
         }
     }
 
+   
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String contenido) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);

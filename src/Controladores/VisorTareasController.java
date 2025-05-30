@@ -1,5 +1,11 @@
-package Tareas;
+package Controladores;
 
+import ConsultasSQL.ConsultasTareas;
+import Objetos.FilaInstruccion;
+import Objetos.FilaDependencia;
+import Objetos.FilaTareas;
+import Tareas.AgregarFXML;
+import Tareas.Tareas;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,14 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
@@ -22,64 +21,44 @@ public class VisorTareasController {
 
     @FXML
     private Button btn_AgregarDependencia;
-
     @FXML
     private Button btn_AgregarInstruccion;
-
     @FXML
     private Button btn_Salir;
-
     @FXML
     private Button btn_DescartarDependencia;
-
     @FXML
     private Button btn_DescartarInstruccion;
-
     @FXML
     private Button btn_Guardar;
-
     @FXML
     private Button btn_Eliminar;
-
     @FXML
     private CheckBox cb_Pausa;
-
     @FXML
     private CheckBox cb_Reanudar;
-
     @FXML
     private CheckBox cb_Reiniciar;
-
     @FXML
     private SplitMenuButton spm_Tareas;
-
     @FXML
     private TableView<FilaInstruccion> tbv_Instrucciones;
-
     @FXML
     private TableView<FilaDependencia> tbv_Dependencias;
-
     @FXML
     private TableColumn<FilaInstruccion, String> tbc_Instrucciones;
-
     @FXML
     private TableColumn<FilaDependencia, String> tbc_Dependencias;
-
     @FXML
     private TableView<FilaTareas> tbv_Tareas;
-
     @FXML
     private TableColumn<FilaTareas, String> tbc_Tareas;
-
     @FXML
     private TextField tf_Descripcion;
-
     @FXML
     private TextField tf_NombreInstruccion;
-
     @FXML
     private TextField tf_NombreTarea;
-
     @FXML
     private TextField tf_idTarea;
 
@@ -96,9 +75,8 @@ public class VisorTareasController {
         tbv_Instrucciones.setItems(filasInstruccion);
         tbc_Dependencias.setCellValueFactory(new PropertyValueFactory<>("dependencia"));
         tbv_Dependencias.setItems(filasDependencia);
-
-        tbc_Tareas.setCellValueFactory(new PropertyValueFactory<>("tarea")); // "tarea" es el nombre del atributo en FilaTareas
-        tbv_Tareas.setItems(filasTarea); // Vinculas la tabla con la lista ObservableList
+        tbc_Tareas.setCellValueFactory(new PropertyValueFactory<>("tarea"));
+        tbv_Tareas.setItems(filasTarea);
 
         cargarTareasEnTabla();
 
@@ -118,12 +96,10 @@ public class VisorTareasController {
             btn_DescartarDependencia.setDisable(true);
         }
         setControlesHabilitados(false);
-
     }
 
     @FXML
     private void SeleccionarMenuItem(ActionEvent event) {
-        MenuItem fuente = (MenuItem) event.getSource();
         MenuItem selectedMenuItem = (MenuItem) event.getSource();
         String texto = selectedMenuItem.getText();
         spm_Tareas.setText(texto);
@@ -133,7 +109,7 @@ public class VisorTareasController {
     void AgregarInstruccion(ActionEvent event) {
         nombreInstruccion = tf_NombreInstruccion.getText();
         if (!nombreInstruccion.isEmpty()) {
-            FilaInstruccion nueva = new FilaInstruccion(nombreInstruccion); // Solo instrucción
+            FilaInstruccion nueva = new FilaInstruccion(nombreInstruccion);
             filasInstruccion.add(nueva);
             tf_NombreInstruccion.clear();
         }
@@ -142,11 +118,24 @@ public class VisorTareasController {
     @FXML
     void AgregarDependencia(ActionEvent event) {
         nombreDependencia = spm_Tareas.getText();
-        if (!nombreDependencia.isEmpty() && !nombreDependencia.equals("Tareas")) {
-            FilaDependencia nueva = new FilaDependencia(nombreDependencia);
-            filasDependencia.add(nueva);
-            tf_NombreInstruccion.clear();
+        String nombreTareaActual = tf_NombreTarea.getText();
+
+        if (nombreDependencia.isEmpty() || nombreDependencia.equals("Tareas")) {
+            return;
         }
+
+        if (nombreDependencia.equals(nombreTareaActual)) {
+            mostrarAlerta(
+                    Alert.AlertType.WARNING,
+                    "Dependencia inválida",
+                    "No puedes agregar la misma tarea como su propia dependencia."
+            );
+            return;
+        }
+
+        FilaDependencia nueva = new FilaDependencia(nombreDependencia);
+        filasDependencia.add(nueva);
+        tf_NombreInstruccion.clear();
     }
 
     @FXML
@@ -161,10 +150,7 @@ public class VisorTareasController {
         if (seleccionado != null) {
             filasDependencia.remove(seleccionado);
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay ningún elemento seleccionado");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay ningún elemento seleccionado");
         }
     }
 
@@ -174,10 +160,7 @@ public class VisorTareasController {
         if (seleccionado != null) {
             filasInstruccion.remove(seleccionado);
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay ningún elemento seleccionado");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay ningún elemento seleccionado");
         }
     }
 
@@ -186,14 +169,13 @@ public class VisorTareasController {
         Tareas tarea = null;
         AgregarFXML validar = new AgregarFXML();
         String textoId = tf_idTarea.getText();
+
         if (textoId == null || textoId.trim().isEmpty()) {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay tarea seleccionada");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay tarea seleccionada");
             return;
         }
-        int idTarea = Integer.parseInt(tf_idTarea.getText());
+
+        int idTarea = Integer.parseInt(textoId);
         String nombreTarea = tf_NombreTarea.getText();
         String descripcion = tf_Descripcion.getText();
         Boolean valorPausa = cb_Pausa.isSelected();
@@ -201,30 +183,28 @@ public class VisorTareasController {
         Boolean valorReiniciar = cb_Reiniciar.isSelected();
 
         String cadenaInstrucciones = filasInstruccion.stream()
-                .map(fila -> fila.getInstruccion())
+                .map(FilaInstruccion::getInstruccion)
                 .collect(Collectors.joining(","));
 
         String cadenaDependencias = filasDependencia.stream()
-                .map(fila -> fila.getDependencia())
+                .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
+
         boolean validacion = validar.validarCampos(nombreTarea, descripcion, cadenaInstrucciones);
 
         if (validacion) {
             tarea = new Tareas(nombreTarea, descripcion, valorPausa, valorReanudar, valorReiniciar, cadenaDependencias, cadenaInstrucciones);
         }
-        ConsultasSQL crearTarea = new ConsultasSQL();
+
+        ConsultasTareas crearTarea = new ConsultasTareas();
         Boolean creado = crearTarea.Modificar(tarea, idTarea);
+
         if (creado) {
-            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-            alerta.setTitle("Operación exitosa");
-            alerta.setHeaderText(null);
-            alerta.setContentText("Los datos se han guardado correctamente.");
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han guardado correctamente.");
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se pudieron guardar los datos.");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron guardar los datos.");
         }
+        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
 
     }
 
@@ -233,36 +213,26 @@ public class VisorTareasController {
         String textoId = tf_idTarea.getText();
 
         if (textoId == null || textoId.trim().isEmpty()) {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se pudieron eliminar los datos.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
             return;
         }
-        int id_Tarea = Integer.parseInt(tf_idTarea.getText());
 
-        ConsultasSQL crearTarea = new ConsultasSQL();
+        int id_Tarea = Integer.parseInt(textoId);
+
+        ConsultasTareas crearTarea = new ConsultasTareas();
         Boolean creado = crearTarea.Eliminar(id_Tarea);
 
         if (creado) {
-            Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-            alerta.setTitle("Operación exitosa");
-            alerta.setHeaderText(null);
-            alerta.setContentText("Los datos se han eliminado correctamente.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han eliminado correctamente.");
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No se pudieron eliminar los datos.");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
         }
+        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
+
     }
 
     @FXML
     void Pausa(ActionEvent event) {
-
         if (cb_Pausa.isSelected()) {
             cb_Reanudar.setDisable(false);
             cb_Reiniciar.setDisable(false);
@@ -275,9 +245,9 @@ public class VisorTareasController {
     }
 
     private void cargarTareasEnTabla() {
-        filasTarea.clear(); // Limpia los datos anteriores
+        filasTarea.clear();
 
-        ConsultasSQL consultas = new ConsultasSQL();
+        ConsultasTareas consultas = new ConsultasTareas();
         ArrayList<String> listaTareas = consultas.ListaTareas();
 
         if (listaTareas != null && !listaTareas.isEmpty()) {
@@ -286,7 +256,6 @@ public class VisorTareasController {
             }
         } else {
             filasTarea.add(new FilaTareas("No existen tareas actualmente"));
-
         }
     }
 
@@ -294,10 +263,9 @@ public class VisorTareasController {
         String comparar = tareaSeleccionada.getTarea();
 
         if (!comparar.equals("No existen tareas actualmente") && !comparar.equals("")) {
-            ConsultasSQL consultaDetalleTarea = new ConsultasSQL();
+            ConsultasTareas consultaDetalleTarea = new ConsultasTareas();
             List<Tareas> listaTareas = consultaDetalleTarea.ConsultaTareas();
 
-            // Buscar la tarea que coincida con el nombre seleccionado
             Tareas tareaConsultada = null;
             for (Tareas t : listaTareas) {
                 if (t.getNombreTarea().equals(comparar)) {
@@ -307,51 +275,34 @@ public class VisorTareasController {
             }
 
             if (tareaConsultada != null) {
-                // Cargar datos en los campos de texto
                 tf_NombreTarea.setText(tareaConsultada.getNombreTarea());
                 tf_idTarea.setText(String.valueOf(tareaConsultada.getIdTarea()));
 
-                // Limpiar listas previas
                 filasInstruccion.clear();
                 filasDependencia.clear();
 
-                // Procesar y cargar las instrucciones
                 String instruccionesConsulta = tareaConsultada.getInstruccion();
                 if (instruccionesConsulta != null && !instruccionesConsulta.trim().isEmpty()) {
-                    String[] instrucciones = instruccionesConsulta.split(",");
-                    for (String parte : instrucciones) {
+                    for (String parte : instruccionesConsulta.split(",")) {
                         filasInstruccion.add(new FilaInstruccion(parte.trim()));
                     }
                 }
 
-                // Procesar y cargar las dependencias
                 String dependenciaConsulta = tareaConsultada.getDependencia();
                 if (dependenciaConsulta != null && !dependenciaConsulta.trim().isEmpty()) {
-                    String[] dependencias = dependenciaConsulta.split(",");
-                    for (String parte : dependencias) {
+                    for (String parte : dependenciaConsulta.split(",")) {
                         filasDependencia.add(new FilaDependencia(parte.trim()));
                     }
                 }
 
-                // Configurar los CheckBox según los valores de la tarea
                 cb_Pausa.setSelected(tareaConsultada.getValorPausa());
                 cb_Reanudar.setSelected(tareaConsultada.getValorReanudar());
                 cb_Reiniciar.setSelected(tareaConsultada.getValorReiniciar());
             } else {
-                // Mostrar alerta si la tarea no se encuentra
-                Alert alerta = new Alert(Alert.AlertType.ERROR);
-                alerta.setTitle("Error");
-                alerta.setHeaderText(null);
-                alerta.setContentText("La tarea seleccionada no existe en la base de datos.");
-                alerta.showAndWait();
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "La tarea seleccionada no existe en la base de datos.");
             }
         } else {
-            // Mostrar alerta si no hay tareas creadas o el nombre es inválido
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText(null);
-            alerta.setContentText("No hay tareas creadas");
-            alerta.showAndWait();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay tareas creadas");
         }
     }
 
@@ -362,14 +313,19 @@ public class VisorTareasController {
         btn_DescartarInstruccion.setDisable(!habilitado);
         btn_Guardar.setDisable(!habilitado);
         btn_Eliminar.setDisable(!habilitado);
-
         cb_Pausa.setDisable(!habilitado);
         spm_Tareas.setDisable(!habilitado);
-
         tf_Descripcion.setDisable(!habilitado);
         tf_NombreInstruccion.setDisable(!habilitado);
         tf_NombreTarea.setDisable(!habilitado);
         tf_idTarea.setDisable(!habilitado);
+    }
 
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
     }
 }

@@ -14,11 +14,11 @@ public class CrearPane {
         switch (id) {
             case "CrearOperacion":
             case "EditorOperacion":
-                ruta = "/Operaciones/" + id + ".fxml";
+                ruta = "/FXML/" + id + ".fxml";
                 break;
             case "CrearTarea":
             case "EditarTarea":
-                ruta = "/Tareas/" + id + ".fxml";
+                ruta = "/FXML/" + id + ".fxml";
                 break;
             case "AcercaDe":
                 ruta = "/FXML/AcercaDe.fxml";

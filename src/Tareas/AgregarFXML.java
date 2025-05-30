@@ -4,6 +4,7 @@
  */
 package Tareas;
 
+import ConsultasSQL.ConsultasTareas;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.MenuItem;
@@ -15,7 +16,7 @@ import javafx.scene.control.Alert;
 
 public class AgregarFXML {
     public static void cargarTareasEnMenu(SplitMenuButton spm_Tareas, EventHandler<ActionEvent> handler) {
-        ConsultasSQL listaDeTareas = new ConsultasSQL();
+        ConsultasTareas listaDeTareas = new ConsultasTareas();
         List<String> ListaTareas = listaDeTareas.ListaTareas();
 
         spm_Tareas.getItems().clear(); // Limpiar ítems anteriores si es necesario

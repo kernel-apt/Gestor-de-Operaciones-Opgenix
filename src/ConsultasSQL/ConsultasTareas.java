@@ -1,29 +1,19 @@
-package Tareas;
+package ConsultasSQL;
 
+import Tareas.Tareas;
 import gestorDeOperaciones.GestorDeOperaciones;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.TextArea;
 
-public class ConsultasSQL {
+public class ConsultasTareas {
 
     Connection con = GestorDeOperaciones.getConnection();
     private List<String> cadenaTareas = new ArrayList<>();
     private List<Integer> cantidades = new ArrayList<>();
-    Alert alerta;
-    String nombreTarea;
-    int idTarea;
-    String descripcion;
-    Boolean pausa;
-    Boolean reanudar;
-    Boolean reiniciar;
-    String dependencia;
-    String instruccion;
 
     public ArrayList<String> ListaTareas() {
         cadenaTareas.clear();
@@ -32,17 +22,17 @@ public class ConsultasSQL {
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery("SELECT Nombre FROM tarea");
                 while (rs.next()) {
-                    nombreTarea = rs.getString("Nombre");
-                    cadenaTareas.add(nombreTarea);
+                    cadenaTareas.add(rs.getString("Nombre"));
                 }
                 rs.close();
                 st.close();
             }
         } catch (SQLException e) {
-            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-            alerta.showAndWait();
+            mostrarAlerta("No se pudo obtener la lista de tareas.",
+                    "Verifica que la base de datos esté activa y que la tabla 'tarea' exista.",
+                    e);
         }
-        return (ArrayList) cadenaTareas;
+        return (ArrayList<String>) cadenaTareas;
     }
 
     public ArrayList<Integer> ListaTareasCantidad() {
@@ -80,37 +70,41 @@ public class ConsultasSQL {
                 st.close();
             }
         } catch (SQLException e) {
-            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-            alerta.showAndWait();
+            mostrarAlerta("No se pudieron obtener los datos estadísticos.",
+                    "Revisa que las tablas 'operacion' y 'tarea' existan y tengan datos.",
+                    e);
         }
         return (ArrayList<Integer>) cantidades;
     }
 
     public List<Tareas> ConsultaTareas() {
         List<Tareas> listaTareas = new ArrayList<>();
-        Tareas tarea;
         try {
             if (con != null) {
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery("SELECT * FROM tarea");
+
                 while (rs.next()) {
-                    idTarea = rs.getInt("idTarea");
-                    nombreTarea = rs.getString("Nombre");
-                    descripcion = rs.getString("Descripcion");
-                    pausa = rs.getBoolean("Pausa");
-                    reanudar = rs.getBoolean("Reanudar");
-                    reiniciar = rs.getBoolean("Reiniciar");
-                    dependencia = rs.getString("Dependencia");
-                    instruccion = rs.getString("Instruccion");
-                    tarea = new Tareas(idTarea, nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
+                    Tareas tarea = new Tareas(
+                            rs.getInt("idTarea"),
+                            rs.getString("Nombre"),
+                            rs.getString("Descripcion"),
+                            rs.getBoolean("Pausa"),
+                            rs.getBoolean("Reanudar"),
+                            rs.getBoolean("Reiniciar"),
+                            rs.getString("Dependencia"),
+                            rs.getString("Instruccion")
+                    );
                     listaTareas.add(tarea);
                 }
+
                 rs.close();
                 st.close();
             }
         } catch (SQLException e) {
-            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-            alerta.showAndWait();
+            mostrarAlerta("No se pudo obtener la lista completa de tareas.",
+                    "Es posible que la tabla 'tarea' no esté correctamente definida.",
+                    e);
         }
         return listaTareas;
     }
@@ -124,34 +118,35 @@ public class ConsultasSQL {
                     ps.setString(1, nombreTareaFiltro);
                     try (ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
-                            idTarea = rs.getInt("idTarea");
-                            nombreTarea = rs.getString("Nombre");
-                            descripcion = rs.getString("Descripcion");
-                            pausa = rs.getBoolean("Pausa");
-                            reanudar = rs.getBoolean("Reanudar");
-                            reiniciar = rs.getBoolean("Reiniciar");
-                            dependencia = rs.getString("Dependencia");
-                            instruccion = rs.getString("Instruccion");
-
-                            Tareas tarea = new Tareas(idTarea, nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencia, instruccion);
+                            Tareas tarea = new Tareas(
+                                    rs.getInt("idTarea"),
+                                    rs.getString("Nombre"),
+                                    rs.getString("Descripcion"),
+                                    rs.getBoolean("Pausa"),
+                                    rs.getBoolean("Reanudar"),
+                                    rs.getBoolean("Reiniciar"),
+                                    rs.getString("Dependencia"),
+                                    rs.getString("Instruccion")
+                            );
                             listaTareas.add(tarea);
                         }
                     }
                 }
             }
         } catch (SQLException e) {
-            alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-            alerta.showAndWait();
+            mostrarAlerta("No se pudo filtrar la tarea seleccionada.",
+                    "Verifica que el nombre ingresado exista en la base de datos.",
+                    e);
         }
         return listaTareas;
     }
 
     public boolean Guardar(Tareas tarea) {
-        Boolean creado = false;
+        boolean creado = false;
         if (con != null) {
             String sql = "INSERT INTO tarea (Nombre, Descripcion, Pausa, Reanudar, Reiniciar, Dependencia, Instruccion, Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setString(1, tarea.getNombreTarea());
                 ps.setString(2, tarea.getDescripcion());
                 ps.setBoolean(3, tarea.getValorPausa());
@@ -161,20 +156,18 @@ public class ConsultasSQL {
                 ps.setString(7, tarea.getInstruccion());
                 ps.setString(8, "Creado");
 
-                int filasInsertadas = ps.executeUpdate();
-                if (filasInsertadas != 0) {
-                    creado = true;
-                }
+                creado = ps.executeUpdate() > 0;
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al guardar la tarea: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta("No se pudo guardar la tarea.",
+                        "Es posible que ya exista una tarea con el mismo nombre o haya un error en los datos.",
+                        e);
             }
         }
         return creado;
     }
 
     public boolean Modificar(Tareas tarea, int id) {
-        Boolean modificado = false;
+        boolean modificado = false;
         if (con != null) {
             String sql = "UPDATE tarea SET Nombre = ?, Descripcion = ?, Pausa = ?, Reanudar = ?, Reiniciar = ?, Dependencia = ?, Instruccion = ?, Estado = ? WHERE idTarea = ?";
 
@@ -189,34 +182,50 @@ public class ConsultasSQL {
                 ps.setString(8, "Modificado");
                 ps.setInt(9, id);
 
-                int filasActualizadas = ps.executeUpdate();
-                if (filasActualizadas != 0) {
-                    modificado = true;
-                }
+                modificado = ps.executeUpdate() > 0;
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al modificar la tarea: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta("No se pudo actualizar la tarea.",
+                        "Verifica que el ID sea válido y que los datos estén correctamente ingresados.",
+                        e);
             }
         }
         return modificado;
     }
 
     public boolean Eliminar(int id) {
-        Boolean modificado = false;
+        boolean eliminado = false;
         if (con != null) {
             String sql = "DELETE FROM tarea WHERE idTarea = ?";
 
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, id);
-                int filasInsertadas = ps.executeUpdate();
-                if (filasInsertadas != 0) {
-                    modificado = true;
-                }
+                eliminado = ps.executeUpdate() > 0;
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al eliminar la tarea: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta("No se pudo eliminar la tarea.",
+                        "Es posible que la tarea esté relacionada con una operación activa.",
+                        e);
             }
         }
-        return modificado;
+        return eliminado;
+    }
+
+    // Alerta refinada con detalles técnicos opcionales
+    private void mostrarAlerta(String mensaje, String sugerencia, Exception e) {
+        Alert alerta = new Alert(AlertType.ERROR);
+        alerta.setTitle("Error");
+        alerta.setHeaderText(mensaje);
+        alerta.setContentText(sugerencia);
+
+        String detallesTecnicos = e.toString();
+        TextArea textArea = new TextArea(detallesTecnicos);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+
+        alerta.getDialogPane().setExpandableContent(textArea);
+        alerta.getDialogPane().setExpanded(false);
+
+        alerta.showAndWait();
     }
 }

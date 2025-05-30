@@ -2,25 +2,31 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Operaciones;
+package Objetos;
+
+import javafx.beans.property.SimpleStringProperty;
 
 /**
  *
  * @author parca
  */
 public class FilaOperacion {
-    private String operacion;
+    private final SimpleStringProperty operacion;
 
     public FilaOperacion(String operacion) {
-        this.operacion = operacion;
+        this.operacion = new SimpleStringProperty(operacion);
     }
-    
+
     public String getOperacion() {
-        return operacion;
+        return operacion.get();
     }
 
     public void setOperacion(String operacion) {
-        this.operacion = operacion;
+        this.operacion.set(operacion);
     }
-    
+
+    public SimpleStringProperty operacionProperty() {
+        return operacion;
+    }
 }
+

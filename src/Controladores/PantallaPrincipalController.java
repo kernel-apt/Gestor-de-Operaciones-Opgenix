@@ -1,11 +1,11 @@
-package gestorDeOperaciones;
+package Controladores;
 
-import Operaciones.Consultassql;
-import Operaciones.FilaOperacion;
-import Operaciones.Operacion;
+import ConsultasSQL.ConsultasOperaciones;
+import Objetos.FilaOperacion;
+import Objetos.Operacion;
 import Tareas.AgregarFXML;
-import Tareas.ConsultasSQL;
-import Tareas.FilaTareas;
+import ConsultasSQL.ConsultasTareas;
+import Objetos.FilaTareas;
 import Tareas.Tareas;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,6 +13,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import gestorDeOperaciones.CrearPane;
 import gestorDeOperaciones.CrearPane;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,9 +83,11 @@ public class PantallaPrincipalController {
     private Map<String, List<String>> dependenciasPorTarea = new HashMap<>();
     private Set<String> tareasPausadas = new HashSet<>();
     private String ejecutar;
+    private static PantallaPrincipalController instancia;
 
     @FXML
     public void initialize() {
+        instancia = this;
         tbc_Operaciones.setCellValueFactory(new PropertyValueFactory<>("operacion"));
         tbc_Tareas.setCellValueFactory(new PropertyValueFactory<>("tarea"));
         tbv_Operaciones.setItems(filasOperaciones);
@@ -106,24 +109,20 @@ public class PantallaPrincipalController {
                 // Acciones según la tarea seleccionada
             }
         });
-        ConsultasSQL consultas = new ConsultasSQL();
+        ConsultasTareas consultas = new ConsultasTareas();
         ArrayList<Integer> cantidades = consultas.ListaTareasCantidad();
         if (cantidades.size() >= 2) {
             tf_OperacionesActivas.setText(cantidades.get(1).toString());
             tf_TotalOperaciones.setText(cantidades.get(0).toString());
+            tf_TareasEjecucion.setText(cantidades.get(2).toString());
+
         } else {
             tf_OperacionesActivas.setText("0");
             tf_TotalOperaciones.setText("0");
+            tf_TareasEjecucion.setText("0");
         }
     }
 
-    @FXML
-    private void RefrescarPantalla(ActionEvent event) {
-        filasTarea.clear();
-        filasOperaciones.clear();
-        fp_Gestor.getChildren().clear();
-        initialize();
-    }
 
     @FXML
     private void Salir(ActionEvent event) {
@@ -189,7 +188,7 @@ public class PantallaPrincipalController {
             alerta.showAndWait();
             return;
         }
-        Consultassql consulta = new Consultassql();
+        ConsultasOperaciones consulta = new ConsultasOperaciones();
         boolean exito = consulta.activarOperacion(ejecutar);
         Alert alerta;
         if (exito) {
@@ -213,7 +212,7 @@ public class PantallaPrincipalController {
             alerta.showAndWait();
             return;
         }
-        Consultassql consulta = new Consultassql();
+        ConsultasOperaciones consulta = new ConsultasOperaciones();
         boolean exito = consulta.detener(ejecutar);
         Alert alerta;
         if (exito) {
@@ -230,7 +229,7 @@ public class PantallaPrincipalController {
 
     private void cargarTareasEnTabla(String operacionSeleccionada) {
         filasTarea.clear();
-        Consultassql consultasSql = new Consultassql();
+        ConsultasOperaciones consultasSql = new ConsultasOperaciones();
         List<Operacion> operaciones = consultasSql.ConsultaOperacion(operacionSeleccionada);
         if (operaciones != null && !operaciones.isEmpty()) {
             Operacion operacion = operaciones.get(0);
@@ -240,32 +239,26 @@ public class PantallaPrincipalController {
                 for (String tarea : tareasArray) {
                     filasTarea.add(new FilaTareas(tarea.trim()));
                 }
-            } else {
-                filasTarea.add(new FilaTareas("No hay tareas asociadas a esta operación"));
-            }
-        } else {
-            filasTarea.add(new FilaTareas("No se encontró la operación o no está en ejecución"));
-        }
+            } 
+        } 
     }
 
     private void cargarOperacionesEnTabla() {
         filasOperaciones.clear();
         fp_Gestor.getChildren().clear();
-        Consultassql consultas = new Consultassql();
+        ConsultasOperaciones consultas = new ConsultasOperaciones();
         ArrayList<String> listaOperacion = consultas.ListaOperaciones();
         if (listaOperacion != null && !listaOperacion.isEmpty()) {
             for (String operacion : listaOperacion) {
                 filasOperaciones.add(new FilaOperacion(operacion));
                 cargarGestor(operacion);
             }
-        } else {
-            filasOperaciones.add(new FilaOperacion("No existen operaciones actualmente"));
-        }
+        } 
     }
 
     private void cargarGestor(String operacion) {
-        Consultassql consultasql = new Consultassql();
-        ConsultasSQL consultaSQL = new ConsultasSQL();
+        ConsultasOperaciones consultasql = new ConsultasOperaciones();
+        ConsultasTareas consultaSQL = new ConsultasTareas();
         List<Operacion> operacionConsultada = consultasql.ConsultaOperacionActiva(operacion);
         checkBoxesMap.clear();
         dependenciasPorTarea.clear();
@@ -298,6 +291,9 @@ public class PantallaPrincipalController {
                                     CheckBox checkbox = new CheckBox(instruccion.trim());
                                     checkbox.setId(idCheckBox);
                                     checkbox.setDisable(!depsList.isEmpty());
+                                    checkbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                                        actualizarEstadosDeDependencias(checkBoxesMap, dependenciasPorTarea);
+                                    });
                                     vboxTareas.getChildren().add(checkbox);
                                     checkBoxesMap.put(idCheckBox, checkbox);
                                 }
@@ -330,9 +326,7 @@ public class PantallaPrincipalController {
                 fp_Gestor.getChildren().add(titledPane);
             }
             actualizarEstadosDeDependencias(checkBoxesMap, dependenciasPorTarea);
-        } else {
-            filasOperaciones.add(new FilaOperacion("No existen operaciones actualmente"));
-        }
+        } 
     }
 
     private void aplicarAccionACheckbox(String tareaClave, java.util.function.Consumer<CheckBox> accion) {
@@ -346,20 +340,42 @@ public class PantallaPrincipalController {
             String tareaClave = entry.getKey();
             List<String> dependencias = entry.getValue();
             boolean todasDependenciasMarcadas = true;
+
             for (String dep : dependencias) {
                 String depPrefix = tareaClave.split("_")[0] + "_" + dep;
-                boolean algunaInstruccionMarcada = checkBoxesMap.entrySet().stream()
+
+                // ✅ Verifica que TODAS las instrucciones de la dependencia estén marcadas
+                boolean todasInstruccionesMarcadas = checkBoxesMap.entrySet().stream()
                         .filter(e -> e.getKey().startsWith(depPrefix))
-                        .anyMatch(e -> e.getValue().isSelected());
-                if (!algunaInstruccionMarcada) {
+                        .allMatch(e -> e.getValue().isSelected());
+
+                if (!todasInstruccionesMarcadas) {
                     todasDependenciasMarcadas = false;
                     break;
                 }
             }
+
             boolean habilitar = todasDependenciasMarcadas;
+
             checkBoxesMap.entrySet().stream()
                     .filter(e -> e.getKey().startsWith(tareaClave))
-                    .forEach(e -> e.getValue().setDisable(!habilitar));
+                    .forEach(e -> {
+                        e.getValue().setDisable(!habilitar);
+                        if (!habilitar) {
+                            e.getValue().setSelected(false); // ⬅️ Se desmarca si está deshabilitado
+                        }
+                    });
         }
+    }
+
+    public static PantallaPrincipalController getInstancia() {
+        return instancia;
+    }
+
+    public void refrescarComponentesVisuales() {
+        filasTarea.clear();
+        filasOperaciones.clear();
+        fp_Gestor.getChildren().clear();
+        initialize();
     }
 }

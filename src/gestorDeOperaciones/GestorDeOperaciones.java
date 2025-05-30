@@ -20,7 +20,7 @@ public class GestorDeOperaciones extends Application {
             conectarBaseDatos();
             inicializarTablas();
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("PantallaPrincipal.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FXML/PantallaPrincipal.fxml"));
             Parent root = loader.load();
 
             Scene scene = new Scene(root);

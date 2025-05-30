@@ -1,8 +1,11 @@
-package Operaciones;
+package Controladores;
 
+import ConsultasSQL.ConsultasOperaciones;
+import Objetos.Operacion;
 import Tareas.AgregarFXML;
-import Tareas.ConsultasSQL;
-import Tareas.FilaDependencia;
+import ConsultasSQL.ConsultasTareas;
+import Objetos.FilaDependencia;
+import Operaciones.Agregarfxml;
 import Tareas.Tareas;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -124,7 +127,7 @@ public class CrearOperacionesController {
         }
 
         Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, cadenaDependencias);
-        Consultassql crearTarea = new Consultassql();
+        ConsultasOperaciones crearTarea = new ConsultasOperaciones();
         Boolean creado = crearTarea.Guardar(operacion);
 
         Alert alerta;
@@ -140,6 +143,8 @@ public class CrearOperacionesController {
             alerta.setContentText("No se pudieron guardar los datos.");
         }
         alerta.showAndWait();
+        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
+        
     }
 
     @FXML
@@ -162,7 +167,7 @@ public class CrearOperacionesController {
         FilaDependencia nueva = new FilaDependencia(nombreDependencia);
         filasDependencia.add(nueva);
 
-        ConsultasSQL consulta = new ConsultasSQL();
+        ConsultasTareas consulta = new ConsultasTareas();
         List<Tareas> tareas = consulta.ConsultaTareas(nombreDependencia);
         if (tareas != null && !tareas.isEmpty()) {
             String dependenciaConsulta = tareas.get(0).getDependencia();

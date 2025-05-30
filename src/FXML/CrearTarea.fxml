@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="726.0" maxWidth="769.0" minHeight="526.0" minWidth="749.0" prefHeight="526.0" prefWidth="749.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Tareas.CrearTareaController">
+<AnchorPane maxHeight="726.0" maxWidth="769.0" minHeight="526.0" minWidth="749.0" prefHeight="526.0" prefWidth="749.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.CrearTareaController">
    <children>
       <Label layoutX="21.0" layoutY="13.0" text="Nombre de la tarea:">
          <font>

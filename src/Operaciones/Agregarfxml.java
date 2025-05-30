@@ -4,7 +4,7 @@
  */
 package Operaciones;
 
-import Tareas.ConsultasSQL;
+import ConsultasSQL.ConsultasTareas;
 import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -20,7 +20,7 @@ import javafx.scene.control.SplitMenuButton;
 public class Agregarfxml {
 
     public static void cargarOperacionesEnMenu(SplitMenuButton spm_Operacion, EventHandler<ActionEvent> handler) {
-        ConsultasSQL listaDeOperacion = new ConsultasSQL();
+        ConsultasTareas listaDeOperacion = new ConsultasTareas();
         List<String> ListaOperacion = listaDeOperacion.ListaTareas();
 
         spm_Operacion.getItems().clear(); // Limpiar ítems anteriores si es necesario

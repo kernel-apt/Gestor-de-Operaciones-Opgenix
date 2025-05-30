@@ -1,5 +1,11 @@
-package Tareas;
+package Controladores;
 
+import ConsultasSQL.ConsultasTareas;
+import Objetos.FilaInstruccion;
+import Objetos.FilaDependencia;
+import Objetos.FilaTareas;
+import Tareas.AgregarFXML;
+import Tareas.Tareas;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -149,7 +155,7 @@ public class CrearTareaController {
         }
 
         Tareas tarea = new Tareas(nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencias, instrucciones);
-        ConsultasSQL consulta = new ConsultasSQL();
+        ConsultasTareas consulta = new ConsultasTareas();
         boolean exito = consulta.Guardar(tarea);
 
         mostrarAlerta(
@@ -161,6 +167,8 @@ public class CrearTareaController {
         limpiarFormulario();
         Stage stage = (Stage) btn_Salir.getScene().getWindow();
         stage.close();
+        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
+
     }
 
     @FXML

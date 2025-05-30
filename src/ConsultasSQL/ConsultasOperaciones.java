@@ -1,5 +1,6 @@
-package Operaciones;
+package ConsultasSQL;
 
+import Objetos.Operacion;
 import Tareas.Tareas;
 import gestorDeOperaciones.GestorDeOperaciones;
 import java.sql.Connection;
@@ -11,11 +12,33 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.control.Alert;
 
-public class Consultassql {
+public class ConsultasOperaciones {
 
     Connection con = GestorDeOperaciones.getConnection();
     private List<String> cadenaOperacion = new ArrayList<>();
     Alert alerta;
+
+    private void mostrarAlerta(SQLException e, String mensajeBase) {
+        String mensajeAmigable;
+        String codigoSQL = e.getSQLState();
+
+        switch (codigoSQL) {
+            case "23505":
+                mensajeAmigable = "El nombre ya está en uso. Usa uno diferente.";
+                break;
+            case "23503":
+                mensajeAmigable = "Una tarea asociada no existe o no es válida.";
+                break;
+            case "08001":
+                mensajeAmigable = "No se pudo conectar a la base de datos. Verifica tu conexión.";
+                break;
+            default:
+                mensajeAmigable = mensajeBase;
+        }
+
+        alerta = new Alert(Alert.AlertType.ERROR, mensajeAmigable + "\n\nDetalles técnicos: " + e.getMessage());
+        alerta.showAndWait();
+    }
 
     public ArrayList<String> ListaTareas() {
         cadenaOperacion.clear();
@@ -26,8 +49,7 @@ public class Consultassql {
                     cadenaOperacion.add(nombreTarea);
                 }
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "Error al obtener la lista de tareas.");
             }
         }
         return (ArrayList<String>) cadenaOperacion;
@@ -42,8 +64,7 @@ public class Consultassql {
                     cadenaOperacion.add(nombreOperacion);
                 }
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "Error al obtener la lista de operaciones.");
             }
         }
         return (ArrayList<String>) cadenaOperacion;
@@ -59,12 +80,9 @@ public class Consultassql {
                 ps.setString(3, operacion.getTareasAsociadas());
                 ps.setString(4, "Creado");
                 int filasInsertadas = ps.executeUpdate();
-                if (filasInsertadas != 0) {
-                    creado = true;
-                }
+                creado = filasInsertadas != 0;
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al guardar la operación: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudo guardar la operación.");
             }
         }
         return creado;
@@ -81,12 +99,9 @@ public class Consultassql {
                 ps.setString(4, "Modificado");
                 ps.setInt(5, id);
                 int filasActualizadas = ps.executeUpdate();
-                if (filasActualizadas != 0) {
-                    modificado = true;
-                }
+                modificado = filasActualizadas != 0;
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al modificar la operación: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudo modificar la operación.");
             }
         }
         return modificado;
@@ -103,24 +118,25 @@ public class Consultassql {
                         int idOperacion = rs.getInt("idOperacion");
                         String tareasAsociadas = rs.getString("Tareas");
 
-                        // Actualizar estado de la operación
                         String sqlUpdateOperacion = "UPDATE operacion SET Estado = ? WHERE idOperacion = ?";
                         try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdateOperacion)) {
                             psUpdate.setString(1, "En ejecucion");
                             psUpdate.setInt(2, idOperacion);
-                            int filasActualizadas = psUpdate.executeUpdate();
-                            actualizado = filasActualizadas > 0;
+                            actualizado = psUpdate.executeUpdate() > 0;
+
                         }
 
-                        // Actualizar estado de las tareas asociadas
                         if (tareasAsociadas != null && !tareasAsociadas.trim().isEmpty()) {
                             String[] tareas = tareasAsociadas.split(",");
                             String sqlUpdateTarea = "UPDATE tarea SET Estado = ? WHERE Nombre = ?";
+
                             try (PreparedStatement psUpdateTarea = con.prepareStatement(sqlUpdateTarea)) {
+
                                 for (String tarea : tareas) {
+
                                     psUpdateTarea.setString(1, "En ejecucion");
                                     psUpdateTarea.setString(2, tarea.trim());
-                                    psUpdateTarea.executeUpdate(); // se actualiza una por una
+                                    psUpdateTarea.executeUpdate();
                                 }
                             }
                         }
@@ -129,8 +145,7 @@ public class Consultassql {
                     }
                 }
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al activar la operación: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudo activar la operación.");
             }
         }
         return actualizado;
@@ -147,16 +162,13 @@ public class Consultassql {
                         int idOperacion = rs.getInt("idOperacion");
                         String tareasAsociadas = rs.getString("Tareas");
 
-                        // Actualizar estado de la operación
                         String sqlUpdateOperacion = "UPDATE operacion SET Estado = ? WHERE idOperacion = ?";
                         try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdateOperacion)) {
                             psUpdate.setString(1, "Creado");
                             psUpdate.setInt(2, idOperacion);
-                            int filasActualizadas = psUpdate.executeUpdate();
-                            actualizado = filasActualizadas > 0;
+                            actualizado = psUpdate.executeUpdate() > 0;
                         }
 
-                        // Actualizar estado de las tareas asociadas
                         if (tareasAsociadas != null && !tareasAsociadas.trim().isEmpty()) {
                             String[] tareas = tareasAsociadas.split(",");
                             String sqlUpdateTarea = "UPDATE tarea SET Estado = ? WHERE Nombre = ?";
@@ -173,8 +185,7 @@ public class Consultassql {
                     }
                 }
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al detener la operación: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudo detener la operación.");
             }
         }
         return actualizado;
@@ -186,13 +197,9 @@ public class Consultassql {
             String sql = "DELETE FROM operacion WHERE idOperacion = ?";
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setInt(1, id);
-                int filasEliminadas = ps.executeUpdate();
-                if (filasEliminadas != 0) {
-                    eliminado = true;
-                }
+                eliminado = ps.executeUpdate() != 0;
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al eliminar la operación: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudo eliminar la operación.");
             }
         }
         return eliminado;
@@ -207,12 +214,10 @@ public class Consultassql {
                     String nombreOperacion = rs.getString("Nombre");
                     int limiteTareas = rs.getInt("Limite");
                     String tareas = rs.getString("Tareas");
-                    Operacion operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
-                    operaciones.add(operacion);
+                    operaciones.add(new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas));
                 }
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudieron consultar las operaciones.");
             }
         }
         return operaciones;
@@ -230,20 +235,17 @@ public class Consultassql {
                         String nombreOperacion = rs.getString("Nombre");
                         int limiteTareas = rs.getInt("Limite");
                         String tareas = rs.getString("Tareas");
-                        Operacion operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
-                        operaciones.add(operacion);
+                        operaciones.add(new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas));
                     }
                 }
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudo consultar la operación.");
             }
         }
         return operaciones;
     }
-    
-    
-        public List<Operacion> ConsultaOperacionActiva(String consultaOperacion) {
+
+    public List<Operacion> ConsultaOperacionActiva(String consultaOperacion) {
         List<Operacion> operaciones = new ArrayList<>();
         if (con != null) {
             String sql = "SELECT * FROM operacion WHERE Nombre = ? AND Estado ='En ejecucion'";
@@ -255,13 +257,11 @@ public class Consultassql {
                         String nombreOperacion = rs.getString("Nombre");
                         int limiteTareas = rs.getInt("Limite");
                         String tareas = rs.getString("Tareas");
-                        Operacion operacion = new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas);
-                        operaciones.add(operacion);
+                        operaciones.add(new Operacion(idOperacion, nombreOperacion, limiteTareas, tareas));
                     }
                 }
             } catch (SQLException e) {
-                alerta = new Alert(Alert.AlertType.ERROR, "Error al realizar la consulta: " + e.getMessage());
-                alerta.showAndWait();
+                mostrarAlerta(e, "No se pudo consultar la operación activa.");
             }
         }
         return operaciones;
