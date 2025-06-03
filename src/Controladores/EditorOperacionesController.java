@@ -1,14 +1,17 @@
 package Controladores;
 
+import ConsultasSQL.ConsultaInstrucciones;
 import ConsultasSQL.ConsultasOperaciones;
 import Objetos.Operacion;
 import Objetos.FilaOperacion;
-import Tareas.AgregarFXML;
+import Validaciones.AgregarTareas;
 import ConsultasSQL.ConsultasTareas;
 import Objetos.FilaDependencia;
 import Objetos.FilaTareas;
-import Operaciones.Agregarfxml;
-import Tareas.Tareas;
+import Validaciones.AgregarOperaciones;
+import Objetos.Tareas;
+import gestorDeOperaciones.GestorDeOperaciones;
+import java.sql.Connection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -50,31 +53,28 @@ public class EditorOperacionesController {
     @FXML
     private TextField tf_NombreEntrada;
     @FXML
-    private TextField tf_Salidas;
-    @FXML
-    private TextField tf_id;
+    private TextField tf_SalidaEsperada;
 
+    private Connection con = GestorDeOperaciones.getConnection();
     private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
     private ObservableList<FilaOperacion> filasOperaciones = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
-
         tbc_Dependencias.setCellValueFactory(new PropertyValueFactory<>("dependencia"));
         tbv_Dependencias.setItems(filasDependencia);
         tbc_Operaciones.setCellValueFactory(new PropertyValueFactory<>("operacion"));
         tbv_Operaciones.setItems(filasOperaciones);
         cargarOperacionesEnTabla();
-
+        AgregarTareas agregarTareasMenu = new AgregarTareas();
+        agregarTareasMenu.cargarTareasEnMenu(con, spm_Tareas, this::SeleccionarMenuItem);
         tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 cargarDatos(newSelection);
                 setControlesHabilitados(true);
             }
-
         });
 
-        Agregarfxml.cargarOperacionesEnMenu(spm_Tareas, this::SeleccionarMenuItem);
         MenuItem primerItem = spm_Tareas.getItems().get(0);
         String textoMenuItem = primerItem.getText();
 
@@ -120,6 +120,8 @@ public class EditorOperacionesController {
         FilaDependencia seleccionado = tbv_Dependencias.getSelectionModel().getSelectedItem();
         if (seleccionado != null) {
             filasDependencia.remove(seleccionado);
+            ConsultasTareas modificarFK = new ConsultasTareas(con); // ✅ Corregido
+            modificarFK.ModificarFK(seleccionado.getDependencia(), null); // ✅ No más NullPointerException
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error de entrada", "No hay ningún elemento seleccionado para eliminar.");
         }
@@ -127,72 +129,66 @@ public class EditorOperacionesController {
 
     @FXML
     void Eliminar(ActionEvent event) {
-        Agregarfxml utilidades = new Agregarfxml();
-        String textoId = tf_id.getText();
-        if (textoId == null || textoId.trim().isEmpty()) {
-            utilidades.mostrarAlerta("Entrada inválida", "El campo ID no puede estar vacío.");
-            return;
-        }
-        int idOperacion = Integer.parseInt(tf_id.getText());
-        ConsultasOperaciones crearTarea = new ConsultasOperaciones();
-        Boolean creado = crearTarea.Eliminar(idOperacion);
+        AgregarOperaciones utilidades = new AgregarOperaciones();
 
-        if (creado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han eliminado correctamente.");
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
-        }
-        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
+        try {
+            String nombreOperacion = tf_NombreEntrada.getText();
 
+            for (FilaDependencia nombreTarea : filasDependencia) {
+                ConsultasTareas crearTarea = new ConsultasTareas(con);
+                ConsultaInstrucciones instrucciones = new ConsultaInstrucciones(con);
+                instrucciones.eliminarInstruccionesPorTarea(nombreTarea.getDependencia());
+
+                crearTarea.Eliminar(nombreTarea.getDependencia());
+
+            }
+
+            ConsultasOperaciones crearTarea = new ConsultasOperaciones(con);
+            boolean creado = crearTarea.Eliminar(nombreOperacion);
+
+            if (creado) {
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han eliminado correctamente.");
+                refrescarPantalla();
+            } else {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
+            }
+            PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
+        } catch (NumberFormatException e) {
+            utilidades.mostrarAlerta("Formato inválido", "El ID debe ser un número.");
+        }
     }
 
     @FXML
     void Guardar(ActionEvent event) {
-        Agregarfxml utilidades = new Agregarfxml();
-        String nombreOperacion = tf_NombreEntrada.getText();
-        String textoId = tf_id.getText();
+        AgregarOperaciones utilidades = new AgregarOperaciones();
+        String nombreOperacion = tf_NombreEntrada.getText().trim();
+        String salidaEsperada = tf_SalidaEsperada.getText().trim();
 
-        if (textoId == null || textoId.trim().isEmpty()) {
-             mostrarAlerta(Alert.AlertType.ERROR, "Entrada inválida", "El campo ID no puede estar vacío.");
-           
+        if (!tf_LimiteDeTareas.getText().matches("\\d+")) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "El límite de tareas debe ser un número.");
             return;
         }
 
-        int idOperacion;
-        try {
-            idOperacion = Integer.parseInt(textoId);
-        } catch (NumberFormatException e) {
-            mostrarAlerta(Alert.AlertType.ERROR,"Entrada inválida", "El ID debe ser un número.");
-            return;
-        }
-
-        int numeroOperaciones;
-        try {
-            numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
-        } catch (NumberFormatException e) {
-            mostrarAlerta(Alert.AlertType.INFORMATION,"Entrada inválida", "No se ha indicado un límite de tareas correcto.");
-            return;
-        }
-
+        int numeroOperaciones = Integer.parseInt(tf_LimiteDeTareas.getText());
         String cadenaDependencias = filasDependencia.stream()
                 .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
 
-        if (!utilidades.validarDatos(nombreOperacion.trim(), numeroOperaciones, cadenaDependencias)) {
+        if (!utilidades.validarDatos(nombreOperacion, numeroOperaciones, cadenaDependencias, salidaEsperada)) {
             return;
         }
 
-        Operacion operacion = new Operacion(nombreOperacion.trim(), numeroOperaciones, cadenaDependencias);
-        ConsultasOperaciones consultas = new ConsultasOperaciones();
-        boolean creado = consultas.Modificar(operacion, idOperacion);
+        Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, salidaEsperada);
+        ConsultasOperaciones consultas = new ConsultasOperaciones(con);
+        boolean creado = consultas.Modificar(operacion);
 
         if (creado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION,"Operación exitosa", "Los datos se han guardado correctamente.");
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han guardado correctamente.");
+            refrescarPantalla();
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR,"Error", "No se pudieron guardar los datos.");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron guardar los datos.");
         }
         PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
-
     }
 
     @FXML
@@ -203,41 +199,38 @@ public class EditorOperacionesController {
 
     private void cargarOperacionesEnTabla() {
         filasOperaciones.clear();
-        ConsultasOperaciones consultas = new ConsultasOperaciones();
-        ArrayList<String> listaOperacion = consultas.ListaOperaciones();
+        ConsultasOperaciones consultas = new ConsultasOperaciones(con);
+        ArrayList<String[]> listaOperacion = consultas.ListaOperaciones();
 
         if (listaOperacion != null && !listaOperacion.isEmpty()) {
-            for (String operacion : listaOperacion) {
-                filasOperaciones.add(new FilaOperacion(operacion));
+            for (String[] operacion : listaOperacion) {
+                String nombre = operacion[0];
+                filasOperaciones.add(new FilaOperacion(nombre));
             }
+
         }
     }
 
     private void cargarDatos(FilaOperacion operacionSeleccionada) {
         String comparar = operacionSeleccionada.getOperacion();
 
-        if (!comparar.equals("No existen operaciones actualmente") && !comparar.equals("")) {
-            ConsultasOperaciones consultaDetalleOperacion = new ConsultasOperaciones();
-            List<Operacion> operacionesConsultadas = consultaDetalleOperacion.ConsultaOperacion();
-            Operacion operacionConsultada = null;
-            for (Operacion op : operacionesConsultadas) {
-                if (op.getNombreOperacion().equals(comparar)) {
-                    operacionConsultada = op;
-                    break;
-                }
-            }
+        if (comparar != null && !comparar.isBlank() && !comparar.equals("No existen operaciones actualmente")) {
+            ConsultasOperaciones consultaDetalleOperacion = new ConsultasOperaciones(con);
+            List<Operacion> operacionesConsultadas = consultaDetalleOperacion.ConsultaOperacion(comparar);
+
+            Operacion operacionConsultada = operacionesConsultadas.stream()
+                    .filter(op -> op.getNombreOperacion().equals(comparar))
+                    .findFirst()
+                    .orElse(null);
 
             if (operacionConsultada != null) {
                 tf_NombreEntrada.setText(operacionConsultada.getNombreOperacion());
-                tf_id.setText(String.valueOf(operacionConsultada.getId()));
+                tf_LimiteDeTareas.setText(String.valueOf(operacionConsultada.getNumeroTareas()));
                 filasDependencia.clear();
-
-                String dependenciaConsulta = operacionConsultada.getTareasAsociadas();
-                if (dependenciaConsulta != null && !dependenciaConsulta.trim().isEmpty()) {
-                    String[] dependencias = dependenciaConsulta.split(",");
-                    for (String parte : dependencias) {
-                        filasDependencia.add(new FilaDependencia(parte.trim()));
-                    }
+                tf_SalidaEsperada.setText(operacionConsultada.getSalida());
+                List<String> tareasAsociadas = consultaDetalleOperacion.buscarTareasPorOperacion(comparar);
+                for (String tarea : tareasAsociadas) {
+                    filasDependencia.add(new FilaDependencia(tarea));
                 }
             } else {
                 mostrarAlerta(Alert.AlertType.ERROR, "Error", "La operación seleccionada no existe en la base de datos.");
@@ -249,39 +242,63 @@ public class EditorOperacionesController {
 
     private void agregarDependenciaSiValida(String nombreDependencia, int limite) {
         if (filasDependencia.stream().anyMatch(f -> f.getDependencia().equals(nombreDependencia))) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Dependencia repetida", "Esta tarea ya fue agregada como dependencia.");
             return;
         }
 
         if (filasDependencia.size() >= limite) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Límite alcanzado", "Ha alcanzado el límite de tareas para esta operación.");
+            mostrarAlerta(Alert.AlertType.ERROR, "Límite alcanzado",
+                    "Ha alcanzado el límite de tareas para esta operación.");
             return;
         }
 
-        FilaDependencia nueva = new FilaDependencia(nombreDependencia);
-        filasDependencia.add(nueva);
+        ConsultasTareas consulta = new ConsultasTareas(con);
+        Tareas tarea = consulta.ConsultaTareas(nombreDependencia);
 
-        ConsultasTareas consulta = new ConsultasTareas();
-        List<Tareas> tareas = consulta.ConsultaTareas(nombreDependencia);
-        if (tareas != null && !tareas.isEmpty()) {
-            String dependenciaConsulta = tareas.get(0).getDependencia();
+        if (tarea != null) {
+            filasDependencia.add(new FilaDependencia(tarea.getNombreTarea()));
+
+            String dependenciaConsulta = tarea.getDependencia();
             if (dependenciaConsulta != null && !dependenciaConsulta.isBlank()) {
                 String[] dependenciasHijas = dependenciaConsulta.split(",");
-                for (String hija : dependenciasHijas) {
-                    String nombreHija = hija.trim();
-                    agregarDependenciaSiValida(nombreHija, limite);
+                for (String nombreHija : dependenciasHijas) {
+                    agregarDependenciaSiValida(nombreHija.trim(), limite);
                 }
             }
         }
     }
 
-   
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String contenido) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);
         alerta.setContentText(contenido);
         alerta.showAndWait();
+    }
+
+    public void refrescarPantalla() {
+        filasOperaciones.clear();
+        filasDependencia.clear();
+        tf_NombreEntrada.clear();
+        tf_LimiteDeTareas.clear();
+        tf_SalidaEsperada.clear();
+        spm_Tareas.setText("Tareas");
+
+        cargarOperacionesEnTabla();
+        setControlesHabilitados(false);
+
+        spm_Tareas.getItems().clear();
+        AgregarTareas agregarTareasMenu = new AgregarTareas();
+        agregarTareasMenu.cargarTareasEnMenu(con, spm_Tareas, this::SeleccionarMenuItem);
+
+        if (!spm_Tareas.getItems().isEmpty()) {
+            String textoMenuItem = spm_Tareas.getItems().get(0).getText();
+            boolean sinTareas = textoMenuItem.equals("No hay tareas creadas");
+            btn_AgregarDependencia.setDisable(sinTareas);
+            btn_DescartarDependencia.setDisable(sinTareas);
+        } else {
+            btn_AgregarDependencia.setDisable(true);
+            btn_DescartarDependencia.setDisable(true);
+        }
     }
 
     private void setControlesHabilitados(boolean habilitado) {
@@ -293,7 +310,6 @@ public class EditorOperacionesController {
         ta_Precondiciones.setDisable(!habilitado);
         tf_LimiteDeTareas.setDisable(!habilitado);
         tf_NombreEntrada.setDisable(!habilitado);
-        tf_Salidas.setDisable(!habilitado);
+        tf_SalidaEsperada.setDisable(!habilitado);
     }
-
 }

@@ -2,9 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Tareas;
+package Validaciones;
 
 import ConsultasSQL.ConsultasTareas;
+import java.sql.Connection;
+import gestorDeOperaciones.GestorDeOperaciones;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.MenuItem;
@@ -14,12 +16,13 @@ import javafx.scene.control.SplitMenuButton;
 import java.util.List;
 import javafx.scene.control.Alert;
 
-public class AgregarFXML {
-    public static void cargarTareasEnMenu(SplitMenuButton spm_Tareas, EventHandler<ActionEvent> handler) {
-        ConsultasTareas listaDeTareas = new ConsultasTareas();
-        List<String> ListaTareas = listaDeTareas.ListaTareas();
+public class AgregarTareas {
+    
+    public static void cargarTareasEnMenu(Connection con, SplitMenuButton spm_Tareas, EventHandler<ActionEvent> handler) {
+        ConsultasTareas listaDeTareas = new ConsultasTareas((java.sql.Connection) con);
+        List<String> ListaTareas = listaDeTareas.ListaTareasSinOperacion(); 
 
-        spm_Tareas.getItems().clear(); // Limpiar ítems anteriores si es necesario
+        spm_Tareas.getItems().clear(); 
 
         if (ListaTareas != null && !ListaTareas.isEmpty()) {
             for (int i = 0; i < ListaTareas.size(); i++) {
@@ -37,13 +40,13 @@ public class AgregarFXML {
                 spm_Tareas.getItems().add(new SeparatorMenuItem());
             }
         } else {
-            MenuItem menuItem = new MenuItem("No hay tareas creadas");
+            MenuItem menuItem = new MenuItem("No hay tareas sin operación");
             spm_Tareas.getItems().add(menuItem);
         }
     }
-    
+
     public boolean validarCampos(String nombreTarea, String descripcion,
-            String cadenaInstrucciones) {
+            String cadenaInstrucciones, String salida) {
         if (nombreTarea == null || nombreTarea.trim().isEmpty()) {
             mostrarAlerta("Error de validación", "El nombre de la tarea es obligatorio.");
             return false;
@@ -58,12 +61,14 @@ public class AgregarFXML {
             mostrarAlerta("Error de validación", "Debe haber al menos una instrucción.");
             return false;
         }
+        if (salida == null || salida.trim().isEmpty()) {
+            mostrarAlerta("Error de validación", "El nombre de la tarea es obligatorio.");
+            return false;
+        }
 
         // Si llegamos aquí, todos los campos son válidos
         return true;
     }
-    
-    
 
     private void mostrarAlerta(String titulo, String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.ERROR);

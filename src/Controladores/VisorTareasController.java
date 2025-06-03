@@ -1,11 +1,14 @@
 package Controladores;
 
+import ConsultasSQL.ConsultaInstrucciones;
 import ConsultasSQL.ConsultasTareas;
 import Objetos.FilaInstruccion;
 import Objetos.FilaDependencia;
 import Objetos.FilaTareas;
-import Tareas.AgregarFXML;
-import Tareas.Tareas;
+import Validaciones.AgregarTareas;
+import Objetos.Tareas;
+import gestorDeOperaciones.GestorDeOperaciones;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,8 +41,6 @@ public class VisorTareasController {
     @FXML
     private CheckBox cb_Reanudar;
     @FXML
-    private CheckBox cb_Reiniciar;
-    @FXML
     private SplitMenuButton spm_Tareas;
     @FXML
     private TableView<FilaInstruccion> tbv_Instrucciones;
@@ -56,11 +57,11 @@ public class VisorTareasController {
     @FXML
     private TextField tf_Descripcion;
     @FXML
+    private TextField tf_SalidaEsperada;
+    @FXML
     private TextField tf_NombreInstruccion;
     @FXML
     private TextField tf_NombreTarea;
-    @FXML
-    private TextField tf_idTarea;
 
     public String nombreInstruccion;
     public String nombreDependencia;
@@ -68,6 +69,7 @@ public class VisorTareasController {
     private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
     private ObservableList<FilaTareas> filasTarea = FXCollections.observableArrayList();
     private ArrayList<String> ListaTareas;
+    Connection con = GestorDeOperaciones.getConnection();
 
     @FXML
     public void initialize() {
@@ -79,6 +81,8 @@ public class VisorTareasController {
         tbv_Tareas.setItems(filasTarea);
 
         cargarTareasEnTabla();
+        AgregarTareas agregarTareasMenu = new AgregarTareas();
+        agregarTareasMenu.cargarTareasEnMenu(con, spm_Tareas, this::SeleccionarMenuItem);
 
         tbv_Tareas.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
@@ -87,7 +91,7 @@ public class VisorTareasController {
             }
         });
 
-        AgregarFXML.cargarTareasEnMenu(spm_Tareas, this::SeleccionarMenuItem);
+        Connection con = GestorDeOperaciones.getConnection();
         MenuItem primerItem = spm_Tareas.getItems().get(0);
         String textoMenuItem = primerItem.getText();
 
@@ -167,20 +171,13 @@ public class VisorTareasController {
     @FXML
     void Guardar(ActionEvent event) {
         Tareas tarea = null;
-        AgregarFXML validar = new AgregarFXML();
-        String textoId = tf_idTarea.getText();
+        AgregarTareas validar = new AgregarTareas();
 
-        if (textoId == null || textoId.trim().isEmpty()) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay tarea seleccionada");
-            return;
-        }
-
-        int idTarea = Integer.parseInt(textoId);
         String nombreTarea = tf_NombreTarea.getText();
         String descripcion = tf_Descripcion.getText();
         Boolean valorPausa = cb_Pausa.isSelected();
         Boolean valorReanudar = cb_Reanudar.isSelected();
-        Boolean valorReiniciar = cb_Reiniciar.isSelected();
+        String salida = tf_SalidaEsperada.getText();
 
         String cadenaInstrucciones = filasInstruccion.stream()
                 .map(FilaInstruccion::getInstruccion)
@@ -190,17 +187,26 @@ public class VisorTareasController {
                 .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
 
-        boolean validacion = validar.validarCampos(nombreTarea, descripcion, cadenaInstrucciones);
+        boolean validacion = validar.validarCampos(nombreTarea, descripcion, cadenaDependencias, salida);
 
         if (validacion) {
-            tarea = new Tareas(nombreTarea, descripcion, valorPausa, valorReanudar, valorReiniciar, cadenaDependencias, cadenaInstrucciones);
+            tarea = new Tareas(nombreTarea, descripcion, valorPausa, valorReanudar, true, cadenaDependencias, salida);
         }
+        ConsultaInstrucciones consultaInstruccion = new ConsultaInstrucciones(con);
+        ConsultasTareas crearTarea = new ConsultasTareas(con);
 
-        ConsultasTareas crearTarea = new ConsultasTareas();
-        Boolean creado = crearTarea.Modificar(tarea, idTarea);
-
+        Boolean creado = crearTarea.Modificar(tarea);
+        for (FilaInstruccion fila : filasInstruccion) {
+            String nombreInstruccion = fila.getInstruccion();
+            boolean exitoInstruccion = consultaInstruccion.crearInstruccion(nombreInstruccion, nombreTarea);
+            if (!exitoInstruccion) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo guardar la instrucción: " + nombreInstruccion);
+                return;
+            }
+        }
         if (creado) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han guardado correctamente.");
+            refrescarPantalla();
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron guardar los datos.");
         }
@@ -210,19 +216,17 @@ public class VisorTareasController {
 
     @FXML
     void Eliminar(ActionEvent event) {
-        String textoId = tf_idTarea.getText();
+        String nombre = tf_NombreTarea.getText();
 
-        if (textoId == null || textoId.trim().isEmpty()) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
-            return;
+        boolean creado = false;
+        ConsultasTareas crearTarea = new ConsultasTareas(con);
+        ConsultaInstrucciones instrucciones = new ConsultaInstrucciones(con);
+        boolean instruccionEliminada = instrucciones.eliminarInstruccionesPorTarea(nombre);
+        if (instruccionEliminada) {
+            creado = crearTarea.Eliminar(nombre);
         }
-
-        int id_Tarea = Integer.parseInt(textoId);
-
-        ConsultasTareas crearTarea = new ConsultasTareas();
-        Boolean creado = crearTarea.Eliminar(id_Tarea);
-
         if (creado) {
+            refrescarPantalla();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han eliminado correctamente.");
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron eliminar los datos.");
@@ -235,19 +239,16 @@ public class VisorTareasController {
     void Pausa(ActionEvent event) {
         if (cb_Pausa.isSelected()) {
             cb_Reanudar.setDisable(false);
-            cb_Reiniciar.setDisable(false);
         } else {
             cb_Reanudar.setSelected(false);
-            cb_Reiniciar.setSelected(false);
             cb_Reanudar.setDisable(true);
-            cb_Reiniciar.setDisable(true);
         }
     }
 
     private void cargarTareasEnTabla() {
         filasTarea.clear();
 
-        ConsultasTareas consultas = new ConsultasTareas();
+        ConsultasTareas consultas = new ConsultasTareas(con);
         ArrayList<String> listaTareas = consultas.ListaTareas();
 
         if (listaTareas != null && !listaTareas.isEmpty()) {
@@ -263,7 +264,7 @@ public class VisorTareasController {
         String comparar = tareaSeleccionada.getTarea();
 
         if (!comparar.equals("No existen tareas actualmente") && !comparar.equals("")) {
-            ConsultasTareas consultaDetalleTarea = new ConsultasTareas();
+            ConsultasTareas consultaDetalleTarea = new ConsultasTareas(con);
             List<Tareas> listaTareas = consultaDetalleTarea.ConsultaTareas();
 
             Tareas tareaConsultada = null;
@@ -276,16 +277,15 @@ public class VisorTareasController {
 
             if (tareaConsultada != null) {
                 tf_NombreTarea.setText(tareaConsultada.getNombreTarea());
-                tf_idTarea.setText(String.valueOf(tareaConsultada.getIdTarea()));
+                tf_SalidaEsperada.setText(tareaConsultada.getSalida());
 
                 filasInstruccion.clear();
                 filasDependencia.clear();
+                ConsultaInstrucciones instrucciones = new ConsultaInstrucciones(con);
+                List<String> instruccionesConsulta = instrucciones.instruccionesAsociadas(comparar);
 
-                String instruccionesConsulta = tareaConsultada.getInstruccion();
-                if (instruccionesConsulta != null && !instruccionesConsulta.trim().isEmpty()) {
-                    for (String parte : instruccionesConsulta.split(",")) {
-                        filasInstruccion.add(new FilaInstruccion(parte.trim()));
-                    }
+                for (String instruccionesAsociadas : instruccionesConsulta) {
+                    filasInstruccion.add(new FilaInstruccion(instruccionesAsociadas.trim()));
                 }
 
                 String dependenciaConsulta = tareaConsultada.getDependencia();
@@ -297,7 +297,6 @@ public class VisorTareasController {
 
                 cb_Pausa.setSelected(tareaConsultada.getValorPausa());
                 cb_Reanudar.setSelected(tareaConsultada.getValorReanudar());
-                cb_Reiniciar.setSelected(tareaConsultada.getValorReiniciar());
             } else {
                 mostrarAlerta(Alert.AlertType.ERROR, "Error", "La tarea seleccionada no existe en la base de datos.");
             }
@@ -318,7 +317,6 @@ public class VisorTareasController {
         tf_Descripcion.setDisable(!habilitado);
         tf_NombreInstruccion.setDisable(!habilitado);
         tf_NombreTarea.setDisable(!habilitado);
-        tf_idTarea.setDisable(!habilitado);
     }
 
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
@@ -328,4 +326,25 @@ public class VisorTareasController {
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
+
+    private void refrescarPantalla() {
+        tf_NombreTarea.clear();
+        tf_Descripcion.clear();
+        tf_SalidaEsperada.clear();
+        tf_NombreInstruccion.clear();
+
+        cb_Pausa.setSelected(false);
+        cb_Reanudar.setSelected(false);
+
+        cb_Reanudar.setDisable(true);
+
+        filasInstruccion.clear();
+        filasDependencia.clear();
+
+        spm_Tareas.setText("Tareas");
+
+        cargarTareasEnTabla();
+        setControlesHabilitados(false);
+    }
+
 }

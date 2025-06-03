@@ -10,17 +10,17 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<SplitPane dividerPositions="0.0037220843672456576" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="524.0" prefWidth="1012.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/22" fx:controller="Controladores.EditorOperacionesController">
+<SplitPane dividerPositions="0.0037220843672456576" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="1012.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.EditorOperacionesController">
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
          <children>
-            <TableView fx:id="tbv_Operaciones" prefHeight="522.0" prefWidth="204.0">
+            <TableView fx:id="tbv_Operaciones" prefHeight="548.0" prefWidth="204.0">
               <columns>
                 <TableColumn fx:id="tbc_Operaciones" prefWidth="203.0" text="Operaciones" />
               </columns>
             </TableView>
          </children></AnchorPane>
-      <AnchorPane maxHeight="520.0" maxWidth="800.0" minHeight="520.0" minWidth="800.0" prefHeight="520.0" prefWidth="800.0">
+      <AnchorPane maxHeight="552.0" maxWidth="800.0" minHeight="520.0" minWidth="800.0" prefHeight="552.0" prefWidth="800.0">
          <children>
             <Label layoutX="77.0" layoutY="47.0" prefHeight="0.0" prefWidth="58.0" text="Operacion:" />
             <Label layoutX="64.0" layoutY="86.0" text="Limite de tareas" />
@@ -30,20 +30,21 @@
             <TextArea fx:id="ta_Precondiciones" layoutX="171.0" layoutY="107.0" prefHeight="48.0" prefWidth="655.0" visible="false" />
             <TextArea layoutX="171.0" layoutY="677.0" prefHeight="54.0" prefWidth="655.0" visible="false" />
             <TextField fx:id="tf_Salidas" layoutX="171.0" layoutY="550.0" prefHeight="25.0" prefWidth="585.0" visible="false" />
-            <Button fx:id="btn_Guardar" layoutX="528.0" layoutY="475.0" mnemonicParsing="false" onAction="#Guardar" prefHeight="24.0" prefWidth="77.0" text="Guardar" />
-            <TextField fx:id="tf_NombreEntrada" editable="false" layoutX="171.0" layoutY="43.0" prefHeight="25.0" prefWidth="487.0" />
+            <Button fx:id="btn_Guardar" layoutX="523.0" layoutY="509.0" mnemonicParsing="false" onAction="#Guardar" prefHeight="24.0" prefWidth="77.0" text="Guardar" />
+            <TextField fx:id="tf_NombreEntrada" disable="true" editable="false" layoutX="171.0" layoutY="43.0" prefHeight="25.0" prefWidth="487.0" />
             <TextField fx:id="tf_LimiteDeTareas" layoutX="171.0" layoutY="82.0" />
             <TableView fx:id="tbv_Dependencias" layoutX="106.0" layoutY="185.0" prefHeight="265.0" prefWidth="632.0">
                <columns>
                   <TableColumn fx:id="tbc_Dependencias" prefWidth="629.0" text="Tareas asociadas" />
                </columns>
             </TableView>
-            <Button fx:id="btn_Salir" layoutX="710.0" layoutY="475.0" mnemonicParsing="false" onAction="#Salir" prefHeight="25.0" prefWidth="58.0" text="Salir" />
+            <Button fx:id="btn_Salir" layoutX="710.0" layoutY="509.0" mnemonicParsing="false" onAction="#Salir" prefHeight="25.0" prefWidth="58.0" text="Salir" textOverrun="CENTER_ELLIPSIS" />
             <SplitMenuButton fx:id="spm_Tareas" layoutX="171.0" layoutY="119.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="495.0" text="Tareas" />
             <Button fx:id="btn_AgregarDependencia" layoutX="683.0" layoutY="119.0" mnemonicParsing="false" onAction="#AgregarDependencia" prefHeight="25.0" prefWidth="34.0" text="+" />
             <Button fx:id="btn_DescartarDependencia" layoutX="722.0" layoutY="119.0" mnemonicParsing="false" onAction="#DescartarDependencia" prefHeight="25.0" prefWidth="34.0" text="-" />
-            <TextField fx:id="tf_id" layoutX="666.0" layoutY="43.0" prefHeight="25.0" prefWidth="126.0" />
-            <Button fx:id="btn_Eliminar" layoutX="620.0" layoutY="475.0" mnemonicParsing="false" onAction="#Eliminar" prefHeight="24.0" prefWidth="77.0" text="Eliminar" />
+            <Button fx:id="btn_Eliminar" layoutX="620.0" layoutY="509.0" mnemonicParsing="false" onAction="#Eliminar" prefHeight="24.0" prefWidth="77.0" text="Eliminar" />
+            <TextField fx:id="tf_SalidaEsperada" layoutX="148.0" layoutY="468.0" prefHeight="25.0" prefWidth="596.0" />
+            <Label layoutX="46.0" layoutY="472.0" text="Salida esperada:" />
          </children>
       </AnchorPane>
   </items>

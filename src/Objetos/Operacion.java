@@ -10,20 +10,36 @@ package Objetos;
  */
 public class Operacion {
 
-    private int id;
 
     private String nombreOperacion;
     private int numeroTareas;
-    private String tareasAsociadas;
     private String estado;
+    private String salida;
 
-    public Operacion(int id, String nombreOperacion, int numeroTareas, String tareasAsociadas, String estado) {
-        this.id = id;
+    public Operacion(String nombreOperacion, int numeroTareas, String estado, String salida) {
         this.nombreOperacion = nombreOperacion;
         this.numeroTareas = numeroTareas;
-        this.tareasAsociadas = tareasAsociadas;
         this.estado = estado;
+        this.salida = salida;
     }
+
+    
+    
+    
+    public Operacion(String nombreOperacion, int numeroTareas, String salida) {
+        this.nombreOperacion = nombreOperacion;
+        this.numeroTareas = numeroTareas;
+        this.salida = salida;
+    }
+
+    public String getSalida() {
+        return salida;
+    }
+
+    public void setSalida(String salida) {
+        this.salida = salida;
+    }
+
 
     public String getEstado() {
         return estado;
@@ -31,27 +47,6 @@ public class Operacion {
 
     public void setEstado(String estado) {
         this.estado = estado;
-    }
-
-    public Operacion(int id, String nombreOperacion, int numeroTareas, String tareasAsociadas) {
-        this.id = id;
-        this.nombreOperacion = nombreOperacion;
-        this.numeroTareas = numeroTareas;
-        this.tareasAsociadas = tareasAsociadas;
-    }
-
-    public Operacion(String nombreOperacion, int numeroTareas, String tareasAsociadas) {
-        this.nombreOperacion = nombreOperacion;
-        this.numeroTareas = numeroTareas;
-        this.tareasAsociadas = tareasAsociadas;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getNombreOperacion() {
@@ -70,12 +65,5 @@ public class Operacion {
         this.numeroTareas = numeroTareas;
     }
 
-    public String getTareasAsociadas() {
-        return tareasAsociadas;
-    }
-
-    public void setTareasAsociadas(String tareasAsociadas) {
-        this.tareasAsociadas = tareasAsociadas;
-    }
 
 }

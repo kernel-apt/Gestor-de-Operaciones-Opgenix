@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -21,12 +22,12 @@
          <children>
             <AnchorPane prefHeight="37.0" prefWidth="1132.0">
                <children>
-                  <MenuBar prefHeight="25.0" prefWidth="1061.0">
+                  <MenuBar prefHeight="37.0" prefWidth="1061.0">
                      <menus>
                         <Menu mnemonicParsing="false" text="Operaciones">
                            <items>
                               <MenuItem fx:id="CrearOperacion" mnemonicParsing="false" onAction="#Menu" text="Crear operaciones" />
-                              <MenuItem fx:id="EditorOperacion" mnemonicParsing="false" onAction="#Menu" text="Editar operaciones" />
+                              <MenuItem fx:id="EditarOperacion" mnemonicParsing="false" onAction="#Menu" text="Editar operaciones" />
                               <Menu text="Tareas">
                                  <items>
                                     <MenuItem fx:id="CrearTarea" mnemonicParsing="false" onAction="#Menu" text="Crear Tarea" />
@@ -42,7 +43,7 @@
                         </Menu>
                      </menus>
                   </MenuBar>
-                  <Button fx:id="btnCerrar" layoutX="1061.0" layoutY="2.0" mnemonicParsing="false" onAction="#Salir" prefHeight="25.0" prefWidth="71.0" text="Cerrar" />
+                  <Button fx:id="btnCerrar" layoutX="1061.0" layoutY="2.0" mnemonicParsing="false" onAction="#Salir" prefHeight="37.0" prefWidth="71.0" text="Cerrar" />
                </children>
             </AnchorPane>
             <BorderPane fx:id="bp_Principal" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="628.0" prefWidth="1132.0" style="-fx-background-color: #C3C9CF;">
@@ -50,38 +51,77 @@
                   <FlowPane prefHeight="0.0" prefWidth="1132.0" style="-fx-background-color: #F0EBF7;" BorderPane.alignment="CENTER" />
                </top>
                <left>
-                  <VBox prefHeight="634.0" prefWidth="256.0" style="-fx-background-color: #EBF2F7;" BorderPane.alignment="CENTER">
+                  <VBox prefHeight="628.0" prefWidth="422.0" style="-fx-background-color: #EBF2F7;" BorderPane.alignment="CENTER">
                      <children>
-                        <ScrollPane prefHeight="315.0" prefWidth="217.0">
+                        <AnchorPane prefHeight="69.0" prefWidth="422.0">
+                           <children>
+                              <Label layoutX="14.0" layoutY="6.0" text="Número maximo de Operaciones:" />
+                              <Label layoutX="14.0" layoutY="36.0" text="Número maximo de operaciones en ejecución:" />
+                              <MenuButton fx:id="menuCreacion" layoutX="197.0" layoutY="2.0" mnemonicParsing="false" text="Sin especificar">
+                                <items>
+                                  <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="1" />
+                                  <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="2" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="3" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="4" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="5" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="10" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="15" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="20" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="30" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="40" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuCreacion" text="50" />
+                                </items>
+                              </MenuButton>
+                              <MenuButton fx:id="menuEjecucion" layoutX="271.0" layoutY="32.0" mnemonicParsing="false" text="Sin especificar">
+                                 <items>
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="1" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="2" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="3" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="4" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="5" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="10" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="15" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="20" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="30" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="40" />
+                                    <MenuItem mnemonicParsing="false" onAction="#MenuEjecucion" text="50" />
+                                 </items>
+                              </MenuButton>
+                           </children>
+                        </AnchorPane>
+                        <ScrollPane prefHeight="306.0" prefWidth="422.0">
                            <content>
                               <AnchorPane fx:id="ap_Operaciones" prefHeight="316.0" prefWidth="241.0">
                                  <children>
-                                    <TableView fx:id="tbv_Operaciones" prefHeight="312.0" prefWidth="240.0">
+                                    <TableView fx:id="tbv_Operaciones" prefHeight="312.0" prefWidth="405.0">
                                        <columns>
-                                          <TableColumn fx:id="tbc_Operaciones" prefWidth="239.0" text="Operaciones" />
+                                          <TableColumn fx:id="tbc_Operaciones" prefWidth="322.0" text="Operaciones" />
+                                          <TableColumn fx:id="tbc_EstadoOperacion" prefWidth="82.0" text="Estado" />
                                        </columns>
                                     </TableView>
                                  </children>
                               </AnchorPane>
                            </content>
                         </ScrollPane>
-                        <ScrollPane prefHeight="294.0" prefWidth="256.0">
+                        <ScrollPane prefHeight="258.0" prefWidth="422.0">
                            <content>
-                              <AnchorPane fx:id="ap_TareasDeOperaciones" prefHeight="291.0" prefWidth="241.0">
+                              <AnchorPane fx:id="ap_TareasDeOperaciones" prefHeight="232.0" prefWidth="420.0">
                                  <children>
-                                    <TableView fx:id="tbv_Tareas" prefHeight="291.0" prefWidth="237.0">
+                                    <TableView fx:id="tbv_Tareas" layoutY="-1.0" prefHeight="225.0" prefWidth="408.0">
                                        <columns>
-                                          <TableColumn fx:id="tbc_Tareas" prefWidth="235.0" text="Tareas" />
+                                          <TableColumn fx:id="tbc_Tareas" editable="false" prefWidth="322.0" text="Tareas" />
+                                          <TableColumn fx:id="tbc_EstadoTareas" editable="false" prefWidth="85.0" text="Estado" />
                                        </columns>
                                     </TableView>
                                  </children>
                               </AnchorPane>
                            </content>
                         </ScrollPane>
-                        <AnchorPane prefHeight="48.0" prefWidth="256.0">
+                        <AnchorPane prefHeight="31.0" prefWidth="422.0">
                            <children>
-                              <Button fx:id="btn_Detener" layoutX="159.0" layoutY="8.0" minWidth="66.0" mnemonicParsing="false" onAction="#Detener" prefHeight="25.0" text="Detener" />
-                              <Button fx:id="btn_Ejecutar" layoutY="8.0" mnemonicParsing="false" onAction="#Ejecutar" prefHeight="25.0" prefWidth="128.0" text="Ejecutar operacion" />
+                              <Button fx:id="btn_Ejecutar" layoutX="47.0" layoutY="2.0" mnemonicParsing="false" onAction="#EjecutarOperacion" prefHeight="25.0" prefWidth="85.0" text="Ejecutar" />
+                              <Button fx:id="btn_Detener" layoutX="151.0" layoutY="3.0" minWidth="66.0" mnemonicParsing="false" onAction="#DetenerOperacion" prefHeight="25.0" text="Detener" />
+                              <Button fx:id="btn_Pausar" layoutX="233.0" layoutY="3.0" mnemonicParsing="false" onAction="#PausarOperacion" prefHeight="25.0" prefWidth="64.0" text="Pausar" />
                            </children>
                         </AnchorPane>
                      </children>

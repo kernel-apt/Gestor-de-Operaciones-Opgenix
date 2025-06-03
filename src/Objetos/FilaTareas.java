@@ -10,10 +10,28 @@ package Objetos;
  */
 public class FilaTareas {
     private String tarea;
+    private String estado;
 
     public FilaTareas(String tarea) {
         this.tarea = tarea;
     }
+
+    public FilaTareas(String tarea, String estado) {
+        this.tarea = tarea;
+        this.estado = estado;
+    }
+
+    
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+    
+    
+    
     
     public String getTarea() {
         return tarea;

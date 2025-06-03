@@ -1,11 +1,14 @@
 package Controladores;
 
+import ConsultasSQL.ConsultaInstrucciones;
 import ConsultasSQL.ConsultasTareas;
 import Objetos.FilaInstruccion;
 import Objetos.FilaDependencia;
 import Objetos.FilaTareas;
-import Tareas.AgregarFXML;
-import Tareas.Tareas;
+import Validaciones.AgregarTareas;
+import Objetos.Tareas;
+import java.sql.Connection;
+import gestorDeOperaciones.GestorDeOperaciones;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -36,8 +39,6 @@ public class CrearTareaController {
     private CheckBox cb_Pausa;
     @FXML
     private CheckBox cb_Reanudar;
-    @FXML
-    private CheckBox cb_Reiniciar;
 
     @FXML
     private SplitMenuButton spm_Tareas;
@@ -63,6 +64,10 @@ public class CrearTareaController {
     private TextField tf_NombreInstruccion;
     @FXML
     private TextField tf_NombreTarea;
+    @FXML
+    private TextField tf_SalidaEsperada;
+
+    Connection con = GestorDeOperaciones.getConnection();
 
     private ObservableList<FilaInstruccion> filasInstruccion = FXCollections.observableArrayList();
     private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
@@ -74,7 +79,7 @@ public class CrearTareaController {
         tbc_Dependencias.setCellValueFactory(new PropertyValueFactory<>("dependencia"));
         tbv_Dependencias.setItems(filasDependencia);
 
-        AgregarFXML.cargarTareasEnMenu(spm_Tareas, this::SeleccionarMenuItem);
+        AgregarTareas.cargarTareasEnMenu(con, spm_Tareas, this::SeleccionarMenuItem);
         if (spm_Tareas.getItems().get(0).getText().equals("No hay tareas creadas")) {
             btn_AgregarDependencia.setDisable(true);
             btn_DescartarDependencia.setDisable(true);
@@ -102,8 +107,6 @@ public class CrearTareaController {
         if (!dependencia.isEmpty() && !dependencia.equals("Tareas")) {
             filasDependencia.add(new FilaDependencia(dependencia));
             spm_Tareas.setText("Tareas");
-            btn_AgregarDependencia.setDisable(true);
-            btn_DescartarDependencia.setDisable(true);
         }
     }
 
@@ -134,13 +137,13 @@ public class CrearTareaController {
 
     @FXML
     private void Guardar(ActionEvent event) {
-        AgregarFXML validador = new AgregarFXML();
+        AgregarTareas validador = new AgregarTareas();
 
-        String nombreTarea = tf_NombreTarea.getText();
+        String nombreTarea = tf_NombreTarea.getText().trim();
         String descripcion = tf_Descripcion.getText();
+        String salida = tf_SalidaEsperada.getText();
         boolean pausa = cb_Pausa.isSelected();
         boolean reanudar = cb_Reanudar.isSelected();
-        boolean reiniciar = cb_Reiniciar.isSelected();
 
         String instrucciones = filasInstruccion.stream()
                 .map(FilaInstruccion::getInstruccion)
@@ -150,35 +153,42 @@ public class CrearTareaController {
                 .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
 
-        if (!validador.validarCampos(nombreTarea, descripcion, instrucciones)) {
+        if (!validador.validarCampos(nombreTarea, descripcion, instrucciones, salida)) {
             return;
         }
 
-        Tareas tarea = new Tareas(nombreTarea, descripcion, pausa, reanudar, reiniciar, dependencias, instrucciones);
-        ConsultasTareas consulta = new ConsultasTareas();
+        ConsultasTareas consulta = new ConsultasTareas(con);
+        ConsultaInstrucciones consultaInstruccion = new ConsultaInstrucciones(con);
+
+        Tareas tarea = new Tareas(nombreTarea, descripcion, pausa, reanudar, true, dependencias, salida);
         boolean exito = consulta.Guardar(tarea);
 
-        mostrarAlerta(
-                exito ? "Operación exitosa" : "Error",
-                exito ? "Los datos se han guardado correctamente." : "No se pudieron guardar los datos.",
-                exito ? Alert.AlertType.INFORMATION : Alert.AlertType.ERROR
-        );
+        if (!exito) {
+            mostrarAlerta("Error", "No se pudo guardar la tarea.", Alert.AlertType.ERROR);
+            return;
+        }
 
+        for (FilaInstruccion fila : filasInstruccion) {
+            String nombreInstruccion = fila.getInstruccion().trim();
+            boolean exitoInstruccion = consultaInstruccion.crearInstruccion(nombreInstruccion, nombreTarea);
+            if (!exitoInstruccion) {
+                mostrarAlerta("Error", "No se pudo guardar la instrucción: " + nombreInstruccion, Alert.AlertType.ERROR);
+                return;
+            }
+        }
+
+        mostrarAlerta("Éxito", "Los datos se han guardado correctamente.", Alert.AlertType.INFORMATION);
         limpiarFormulario();
         Stage stage = (Stage) btn_Salir.getScene().getWindow();
         stage.close();
-        PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
-
     }
 
     @FXML
     private void Pausa(ActionEvent event) {
         boolean activa = cb_Pausa.isSelected();
         cb_Reanudar.setDisable(!activa);
-        cb_Reiniciar.setDisable(!activa);
         if (!activa) {
             cb_Reanudar.setSelected(false);
-            cb_Reiniciar.setSelected(false);
         }
     }
 
@@ -197,9 +207,7 @@ public class CrearTareaController {
         filasDependencia.clear();
         cb_Pausa.setSelected(false);
         cb_Reanudar.setSelected(false);
-        cb_Reiniciar.setSelected(false);
         cb_Reanudar.setDisable(true);
-        cb_Reiniciar.setDisable(true);
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
@@ -209,4 +217,6 @@ public class CrearTareaController {
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
+    
+    
 }

@@ -1,12 +1,16 @@
 package Controladores;
 
+import ConsultasSQL.ConsultasMaximos;
 import ConsultasSQL.ConsultasOperaciones;
 import Objetos.Operacion;
-import Tareas.AgregarFXML;
+import Validaciones.AgregarTareas;
 import ConsultasSQL.ConsultasTareas;
 import Objetos.FilaDependencia;
-import Operaciones.Agregarfxml;
-import Tareas.Tareas;
+import Objetos.Maximos;
+import Validaciones.AgregarOperaciones;
+import Objetos.Tareas;
+import gestorDeOperaciones.GestorDeOperaciones;
+import java.sql.Connection;
 import java.util.List;
 import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
@@ -38,6 +42,8 @@ public class CrearOperacionesController {
     @FXML
     private TextField tf_NombreEntrada;
     @FXML
+    private TextField tf_SalidaEsperada;
+    @FXML
     private TextField tf_LimiteDeTareas;
     @FXML
     private TableView<FilaDependencia> tbv_Dependencias;
@@ -45,13 +51,14 @@ public class CrearOperacionesController {
     private TableColumn<FilaDependencia, String> tbc_Dependencias;
 
     private ObservableList<FilaDependencia> filasDependencia = FXCollections.observableArrayList();
+    Connection con = GestorDeOperaciones.getConnection();
 
     @FXML
     public void initialize() {
         tbc_Dependencias.setCellValueFactory(new PropertyValueFactory<>("dependencia"));
         tbv_Dependencias.setItems(filasDependencia);
-        AgregarFXML agregarTareasMenu = new AgregarFXML();
-        agregarTareasMenu.cargarTareasEnMenu(spm_Tareas, this::SeleccionarMenuItem);
+        AgregarTareas agregarTareasMenu = new AgregarTareas();
+        agregarTareasMenu.cargarTareasEnMenu(con, spm_Tareas, this::SeleccionarMenuItem);
 
         MenuItem primerItem = spm_Tareas.getItems().get(0);
         String textoMenuItem = primerItem.getText();
@@ -115,27 +122,44 @@ public class CrearOperacionesController {
         }
 
         String nombreOperacion = tf_NombreEntrada.getText();
+        String salidaEsperada = tf_SalidaEsperada.getText();
         String cadenaDependencias = filasDependencia.stream()
                 .map(FilaDependencia::getDependencia)
                 .collect(Collectors.joining(","));
 
-        Agregarfxml validar = new Agregarfxml();
-        boolean validacion = validar.validarDatos(nombreOperacion, numeroOperaciones, cadenaDependencias);
+        AgregarOperaciones validar = new AgregarOperaciones();
+        boolean validacion = validar.validarDatos(nombreOperacion, numeroOperaciones, cadenaDependencias, salidaEsperada);
 
         if (!validacion) {
             return;
         }
 
-        Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, cadenaDependencias);
-        ConsultasOperaciones crearTarea = new ConsultasOperaciones();
-        Boolean creado = crearTarea.Guardar(operacion);
+        Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, salidaEsperada);
+        ConsultasOperaciones crearTarea = new ConsultasOperaciones(con);
+        ConsultasMaximos maximo = new ConsultasMaximos(con);
+        List<String[]> totalOperaciones = crearTarea.ListaOperaciones();
+        int cantidadElementos = totalOperaciones.size();
+        Maximos operacionConteo = maximo.obtenerMaximos();
+        int maximoOperaciones = operacionConteo.getMaximoCreacion();
+        boolean creado = false;
+        if (cantidadElementos < maximoOperaciones) {
+            creado = crearTarea.Guardar(operacion);
+        }
 
         Alert alerta;
         if (creado) {
+
+            for (FilaDependencia fila : filasDependencia) {
+                String dependencia = fila.getDependencia();
+                ConsultasTareas modificarFK = new ConsultasTareas((java.sql.Connection) con);
+                modificarFK.ModificarFK(dependencia, nombreOperacion.trim());
+            }
             alerta = new Alert(Alert.AlertType.INFORMATION);
             alerta.setTitle("Operación exitosa");
             alerta.setHeaderText(null);
             alerta.setContentText("Los datos se han guardado correctamente.");
+
+            refrescarPantalla();
         } else {
             alerta = new Alert(Alert.AlertType.ERROR);
             alerta.setTitle("Error");
@@ -144,7 +168,7 @@ public class CrearOperacionesController {
         }
         alerta.showAndWait();
         PantallaPrincipalController.getInstancia().refrescarComponentesVisuales();
-        
+
     }
 
     @FXML
@@ -155,27 +179,26 @@ public class CrearOperacionesController {
 
     private void agregarDependenciaSiValida(String nombreDependencia, int limite) {
         if (filasDependencia.stream().anyMatch(f -> f.getDependencia().equals(nombreDependencia))) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Dependencia repetida", "Esta tarea ya fue agregada como dependencia.");
             return;
         }
 
         if (filasDependencia.size() >= limite) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Límite alcanzado", "Ha alcanzado el límite de tareas para esta operación.");
+            mostrarAlerta(Alert.AlertType.ERROR, "Límite alcanzado",
+                    "Ha alcanzado el límite de tareas para esta operación.");
             return;
         }
 
-        FilaDependencia nueva = new FilaDependencia(nombreDependencia);
-        filasDependencia.add(nueva);
+        ConsultasTareas consulta = new ConsultasTareas((java.sql.Connection) con);
+        Tareas tarea = consulta.ConsultaTareas(nombreDependencia);
 
-        ConsultasTareas consulta = new ConsultasTareas();
-        List<Tareas> tareas = consulta.ConsultaTareas(nombreDependencia);
-        if (tareas != null && !tareas.isEmpty()) {
-            String dependenciaConsulta = tareas.get(0).getDependencia();
+        if (tarea != null) {
+            filasDependencia.add(new FilaDependencia(tarea.getNombreTarea()));
+
+            String dependenciaConsulta = tarea.getDependencia();
             if (dependenciaConsulta != null && !dependenciaConsulta.isBlank()) {
                 String[] dependenciasHijas = dependenciaConsulta.split(",");
-                for (String hija : dependenciasHijas) {
-                    String nombreHija = hija.trim();
-                    agregarDependenciaSiValida(nombreHija, limite);
+                for (String nombreHija : dependenciasHijas) {
+                    agregarDependenciaSiValida(nombreHija.trim(), limite);
                 }
             }
         }
@@ -188,4 +211,28 @@ public class CrearOperacionesController {
         alerta.setContentText(contenido);
         alerta.showAndWait();
     }
+
+    private void refrescarPantalla() {
+        tf_NombreEntrada.clear();
+        tf_SalidaEsperada.clear();
+        tf_LimiteDeTareas.clear();
+        spm_Tareas.setText("Tareas");
+
+        filasDependencia.clear();
+
+        spm_Tareas.getItems().clear();
+        AgregarTareas agregarTareasMenu = new AgregarTareas();
+        agregarTareasMenu.cargarTareasEnMenu(con, spm_Tareas, this::SeleccionarMenuItem);
+
+        if (!spm_Tareas.getItems().isEmpty()) {
+            String textoMenuItem = spm_Tareas.getItems().get(0).getText();
+            boolean sinTareas = textoMenuItem.equals("No hay tareas creadas");
+            btn_AgregarDependencia.setDisable(sinTareas);
+            btn_DescartarDependencia.setDisable(sinTareas);
+        } else {
+            btn_AgregarDependencia.setDisable(true);
+            btn_DescartarDependencia.setDisable(true);
+        }
+    }
+
 }

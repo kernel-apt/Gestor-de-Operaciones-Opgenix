@@ -11,11 +11,11 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<SplitPane dividerPositions="0.5" prefHeight="519.0" prefWidth="957.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.VisorTareasController">
+<SplitPane dividerPositions="0.5" prefHeight="566.0" prefWidth="957.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.VisorTareasController">
    <items>
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="501.0" prefWidth="175.0">
          <children>
-            <TableView fx:id="tbv_Tareas" layoutY="-2.0" prefHeight="526.0" prefWidth="200.0">
+            <TableView fx:id="tbv_Tareas" layoutY="-2.0" prefHeight="564.0" prefWidth="200.0">
                <columns>
                   <TableColumn fx:id="tbc_Tareas" prefWidth="199.0" text="Tareas" />
                </columns>
@@ -50,9 +50,9 @@
                </columns>
             </TableView>
             <Button fx:id="btn_AgregarDependencia" layoutX="658.0" layoutY="144.0" mnemonicParsing="false" onAction="#AgregarDependencia" prefHeight="25.0" prefWidth="34.0" text="+" />
-            <Button fx:id="btn_Guardar" layoutX="426.0" layoutY="480.0" mnemonicParsing="false" onAction="#Guardar" text="Guardar cambios" />
-            <Button fx:id="btn_Salir" layoutX="637.0" layoutY="480.0" mnemonicParsing="false" onAction="#Descartar" prefHeight="25.0" prefWidth="59.0" text="Salir" />
-            <TextField fx:id="tf_NombreTarea" editable="false" layoutX="150.0" layoutY="10.0" prefHeight="25.0" prefWidth="495.0" />
+            <Button fx:id="btn_Guardar" layoutX="426.0" layoutY="517.0" mnemonicParsing="false" onAction="#Guardar" text="Guardar cambios" />
+            <Button fx:id="btn_Salir" layoutX="637.0" layoutY="517.0" mnemonicParsing="false" onAction="#Descartar" prefHeight="25.0" prefWidth="59.0" text="Salir" />
+            <TextField fx:id="tf_NombreTarea" disable="true" editable="false" layoutX="150.0" layoutY="10.0" prefHeight="25.0" prefWidth="473.0" />
             <TextField fx:id="tf_Descripcion" layoutX="150.0" layoutY="51.0" prefHeight="25.0" prefWidth="576.0" />
             <TextField fx:id="tf_NombreInstruccion" layoutX="150.0" layoutY="96.0" prefHeight="25.0" prefWidth="487.0" />
             <CheckBox fx:id="cb_Reanudar" disable="true" layoutX="303.0" layoutY="442.0" mnemonicParsing="false" text="Reanudar" />
@@ -64,7 +64,6 @@
                   <Font size="14.0" />
                </font>
             </Label>
-            <CheckBox fx:id="cb_Reiniciar" disable="true" layoutX="413.0" layoutY="442.0" mnemonicParsing="false" text="Reiniciar" />
             <Button fx:id="btn_AgregarInstruccion" layoutX="658.0" layoutY="96.0" mnemonicParsing="false" onAction="#AgregarInstruccion" prefHeight="25.0" prefWidth="34.0" text="+" />
             <Button fx:id="btn_DescartarInstruccion" layoutX="706.0" layoutY="97.0" mnemonicParsing="false" onAction="#DescartarInstruccion" prefHeight="25.0" prefWidth="34.0" text="-" />
             <TableView fx:id="tbv_Dependencias" layoutX="339.0" layoutY="185.0" prefHeight="246.0" prefWidth="410.0">
@@ -72,8 +71,9 @@
                   <TableColumn fx:id="tbc_Dependencias" prefWidth="409.0" text="Dependencias" />
                </columns>
             </TableView>
-            <TextField fx:id="tf_idTarea" editable="false" layoutX="648.0" layoutY="11.0" prefHeight="25.0" prefWidth="97.0" />
-            <Button fx:id="btn_Eliminar" layoutX="544.0" layoutY="480.0" mnemonicParsing="false" onAction="#Eliminar" prefHeight="25.0" prefWidth="85.0" text="Eliminar" />
+            <Button fx:id="btn_Eliminar" layoutX="544.0" layoutY="517.0" mnemonicParsing="false" onAction="#Eliminar" prefHeight="25.0" prefWidth="85.0" text="Eliminar" />
+            <TextField fx:id="tf_SalidaEsperada" layoutX="140.0" layoutY="475.0" prefHeight="25.0" prefWidth="596.0" />
+            <Label layoutX="40.0" layoutY="479.0" text="Salida esperada:" />
          </children>
       </AnchorPane>
    </items>

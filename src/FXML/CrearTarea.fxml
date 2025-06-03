@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="726.0" maxWidth="769.0" minHeight="526.0" minWidth="749.0" prefHeight="526.0" prefWidth="749.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.CrearTareaController">
+<AnchorPane maxHeight="726.0" maxWidth="769.0" minHeight="526.0" minWidth="749.0" prefHeight="569.0" prefWidth="749.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.CrearTareaController">
    <children>
       <Label layoutX="21.0" layoutY="13.0" text="Nombre de la tarea:">
          <font>
@@ -38,8 +38,8 @@
          </columns>
       </TableView>
       <Button fx:id="btn_AgregarDependencia" layoutX="658.0" layoutY="144.0" mnemonicParsing="false" onAction="#AgregarDependencia" prefHeight="25.0" prefWidth="34.0" text="+" />
-      <Button fx:id="btn_Guardar" layoutX="426.0" layoutY="480.0" mnemonicParsing="false" onAction="#Guardar" text="Guardar cambios" />
-      <Button fx:id="btn_Descartar" layoutX="546.0" layoutY="480.0" mnemonicParsing="false" onAction="#Descartar" prefHeight="25.0" prefWidth="85.0" text="Descartar" />
+      <Button fx:id="btn_Guardar" layoutX="426.0" layoutY="532.0" mnemonicParsing="false" onAction="#Guardar" text="Guardar cambios" />
+      <Button fx:id="btn_Descartar" layoutX="546.0" layoutY="532.0" mnemonicParsing="false" onAction="#Descartar" prefHeight="25.0" prefWidth="85.0" text="Descartar" />
       <TextField fx:id="tf_NombreTarea" layoutX="150.0" layoutY="10.0" prefHeight="25.0" prefWidth="576.0" />
       <TextField fx:id="tf_Descripcion" layoutX="150.0" layoutY="51.0" prefHeight="25.0" prefWidth="576.0" />
       <TextField fx:id="tf_NombreInstruccion" layoutX="150.0" layoutY="96.0" prefHeight="25.0" prefWidth="487.0" />
@@ -52,7 +52,6 @@
             <Font size="14.0" />
          </font>
       </Label>
-      <CheckBox fx:id="cb_Reiniciar" disable="true" layoutX="413.0" layoutY="442.0" mnemonicParsing="false" text="Reiniciar" />
       <Button fx:id="btn_AgregarInstruccion" layoutX="658.0" layoutY="96.0" mnemonicParsing="false" onAction="#AgregarInstruccion" prefHeight="25.0" prefWidth="34.0" text="+" />
       <Button fx:id="btn_DescartarInstruccion" layoutX="706.0" layoutY="97.0" mnemonicParsing="false" onAction="#DescartarInstruccion" prefHeight="25.0" prefWidth="34.0" text="-" />
       <TableView fx:id="tbv_Dependencias" layoutX="361.0" layoutY="185.0" prefHeight="246.0" prefWidth="369.0">
@@ -60,6 +59,8 @@
             <TableColumn fx:id="tbc_Dependencias" prefWidth="368.0" text="Dependencias" />
          </columns>
       </TableView>
-      <Button fx:id="btn_Salir" layoutX="645.0" layoutY="480.0" mnemonicParsing="false" onAction="#Salir" prefHeight="25.0" prefWidth="85.0" text="Salir" />
+      <Button fx:id="btn_Salir" layoutX="650.0" layoutY="532.0" mnemonicParsing="false" onAction="#Salir" prefHeight="25.0" prefWidth="85.0" text="Salir" />
+      <Label layoutX="40.0" layoutY="487.0" text="Salida esperada:" />
+      <TextField fx:id="tf_SalidaEsperada" layoutX="140.0" layoutY="483.0" prefHeight="25.0" prefWidth="596.0" />
    </children>
 </AnchorPane>

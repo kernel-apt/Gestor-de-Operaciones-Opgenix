@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Tareas;
+package Objetos;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,43 +12,61 @@ import javafx.collections.ObservableList;
  * @author parca
  */
 public class Tareas {
-    private int idTarea;
 
-    public Tareas(int idTarea, String nombreTarea, String descripcion, Boolean valorPausa, Boolean valorReanudar, Boolean valorReiniciar, String Dependencia, String Instruccion) {
-        this.idTarea = idTarea;
-        this.nombreTarea = nombreTarea;
-        this.descripcion = descripcion;
-        this.valorPausa = valorPausa;
-        this.valorReanudar = valorReanudar;
-        this.valorReiniciar = valorReiniciar;
-        this.Dependencia = Dependencia;
-        this.Instruccion = Instruccion;
-    }
 
-    public int getIdTarea() {
-        return idTarea;
-    }
-
-    public void setIdTarea(int idTarea) {
-        this.idTarea = idTarea;
-    }
     private String nombreTarea;
     private String descripcion;
     private Boolean valorPausa;
     private Boolean valorReanudar;
     private Boolean valorReiniciar;
     private String Dependencia;
-    private String Instruccion;
+    private String Salida;
+    private String Estado;
 
-    public Tareas(String nombreTarea, String descripcion, Boolean valorPausa, Boolean valorReanudar, Boolean valorReiniciar, String Dependencia, String Instruccion) {
+    public Tareas(String nombreTarea, String descripcion, Boolean valorPausa, Boolean valorReanudar, Boolean valorReiniciar, String Dependencia, String Salida) {
         this.nombreTarea = nombreTarea;
         this.descripcion = descripcion;
         this.valorPausa = valorPausa;
         this.valorReanudar = valorReanudar;
         this.valorReiniciar = valorReiniciar;
         this.Dependencia = Dependencia;
-        this.Instruccion = Instruccion;
+        this.Salida = Salida;
     }
+
+    public Tareas(String nombreTarea, String descripcion, Boolean valorPausa, Boolean valorReanudar, Boolean valorReiniciar, String Dependencia, String Salida, String Estado) {
+        this.nombreTarea = nombreTarea;
+        this.descripcion = descripcion;
+        this.valorPausa = valorPausa;
+        this.valorReanudar = valorReanudar;
+        this.valorReiniciar = valorReiniciar;
+        this.Dependencia = Dependencia;
+        this.Salida = Salida;
+        this.Estado = Estado;
+    }
+
+    
+    
+    
+    public String getEstado() {
+        return Estado;
+    }
+
+    public void setEstado(String Estado) {
+        this.Estado = Estado;
+    }
+
+    
+    
+    
+    public String getSalida() {
+        return Salida;
+    }
+
+    public void setSalida(String Salida) {
+        this.Salida = Salida;
+    }
+    
+
 
     public String getDependencia() {
         return Dependencia;
@@ -58,14 +76,7 @@ public class Tareas {
         this.Dependencia = Dependencia;
     }
 
-    public String getInstruccion() {
-        return Instruccion;
-    }
-
-    public void setInstruccion(String Instruccion) {
-        this.Instruccion = Instruccion;
-    }
-
+ 
    
     public String getNombreTarea() {
         return nombreTarea;

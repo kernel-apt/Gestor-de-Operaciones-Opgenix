@@ -9,11 +9,13 @@ package gestorDeOperaciones;
  * @author parca
  */
 public class CrearPane {
- private String ruta= null;
-    public String Abrir(String id) {    
+
+    private String ruta = null;
+
+    public String Abrir(String id) {
         switch (id) {
             case "CrearOperacion":
-            case "EditorOperacion":
+            case "EditarOperacion":
                 ruta = "/FXML/" + id + ".fxml";
                 break;
             case "CrearTarea":
@@ -24,7 +26,7 @@ public class CrearPane {
                 ruta = "/FXML/AcercaDe.fxml";
                 break;
             default:
-                ruta= "Acción no reconocida: " + id;
+                ruta = "Acción no reconocida: " + id;
                 return ruta;
         }
         return ruta;

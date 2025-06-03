@@ -1,12 +1,16 @@
 package Controladores;
 
+import ConsultasSQL.ConsultaInstrucciones;
+import ConsultasSQL.ConsultasMaximos;
 import ConsultasSQL.ConsultasOperaciones;
 import Objetos.FilaOperacion;
 import Objetos.Operacion;
-import Tareas.AgregarFXML;
+import Validaciones.AgregarTareas;
 import ConsultasSQL.ConsultasTareas;
+import CrearPane.PaneDinamico;
 import Objetos.FilaTareas;
-import Tareas.Tareas;
+import Objetos.Maximos;
+import Objetos.Tareas;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
@@ -15,15 +19,19 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import gestorDeOperaciones.CrearPane;
 import gestorDeOperaciones.CrearPane;
+import gestorDeOperaciones.GestorDeOperaciones;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -38,11 +46,17 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.sql.Connection;
+import javafx.scene.control.MenuButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 
 public class PantallaPrincipalController {
 
+    Connection con = GestorDeOperaciones.getConnection();
     private String text;
     @FXML
     private Button btn_Ejecutar;
@@ -71,12 +85,23 @@ public class PantallaPrincipalController {
     @FXML
     private TableColumn<FilaTareas, String> tbc_Tareas;
     @FXML
+    private TableColumn<FilaTareas, String> tbc_EstadoTareas;
+    @FXML
+    private TableColumn<FilaOperacion, String> tbc_EstadoOperacion;
+    @FXML
     private TableView<FilaOperacion> tbv_Operaciones;
     @FXML
     private TableColumn<FilaOperacion, String> tbc_Operaciones;
+    @FXML
+    private MenuButton menuEjecucion;
+    @FXML
+    private MenuButton menuCreacion;
+
     private ObservableList<FilaTareas> filasTarea = FXCollections.observableArrayList();
+    private ObservableList<FilaTareas> filasTareaEstado = FXCollections.observableArrayList();
     private ArrayList<String> ListaTareas;
     private ObservableList<FilaOperacion> filasOperaciones = FXCollections.observableArrayList();
+    private ObservableList<FilaOperacion> filasOperacionesEstado = FXCollections.observableArrayList();
     @FXML
     private Button btnCerrar;
     private Map<String, CheckBox> checkBoxesMap = new HashMap<>();
@@ -84,17 +109,30 @@ public class PantallaPrincipalController {
     private Set<String> tareasPausadas = new HashSet<>();
     private String ejecutar;
     private static PantallaPrincipalController instancia;
+    private ConsultaInstrucciones ins;
 
     @FXML
     public void initialize() {
         instancia = this;
+        ConsultasMaximos maximos = new ConsultasMaximos(con);
+        maximos.crearMaximos();
+        Maximos maximo = maximos.obtenerMaximos();
+        if(maximo!=null){
+            menuEjecucion.setText(String.valueOf(maximo.getMaximoEjecucion()));
+            menuCreacion.setText(String.valueOf( maximo.getMaximoCreacion()));
+
+        }
+        
         tbc_Operaciones.setCellValueFactory(new PropertyValueFactory<>("operacion"));
+        tbc_EstadoOperacion.setCellValueFactory(new PropertyValueFactory<>("estado"));
         tbc_Tareas.setCellValueFactory(new PropertyValueFactory<>("tarea"));
+        tbc_EstadoTareas.setCellValueFactory(new PropertyValueFactory<>("estado"));
+
         tbv_Operaciones.setItems(filasOperaciones);
         tbv_Tareas.setItems(filasTarea);
+
         cargarOperacionesEnTabla();
-        btn_Ejecutar.setVisible(false);
-        btn_Detener.setVisible(false);
+
         tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             ejecutar = null;
             if (newSelection != null) {
@@ -104,18 +142,21 @@ public class PantallaPrincipalController {
                 btn_Detener.setVisible(true);
             }
         });
+
+        // Listener para selección de tarea (si lo necesitas más adelante)
         tbv_Tareas.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
-                // Acciones según la tarea seleccionada
+                // Lógica para tarea seleccionada
             }
         });
-        ConsultasTareas consultas = new ConsultasTareas();
+
+        // Obtener y mostrar conteo de tareas y operaciones
+        ConsultasTareas consultas = new ConsultasTareas(con);
         ArrayList<Integer> cantidades = consultas.ListaTareasCantidad();
-        if (cantidades.size() >= 2) {
+        if (cantidades.size() >= 3) {
             tf_OperacionesActivas.setText(cantidades.get(1).toString());
             tf_TotalOperaciones.setText(cantidades.get(0).toString());
             tf_TareasEjecucion.setText(cantidades.get(2).toString());
-
         } else {
             tf_OperacionesActivas.setText("0");
             tf_TotalOperaciones.setText("0");
@@ -123,64 +164,140 @@ public class PantallaPrincipalController {
         }
     }
 
-
     @FXML
     private void Salir(ActionEvent event) {
         Platform.exit();
     }
-
+    
     @FXML
-    public void Menu(ActionEvent event) {
+    public void MenuCreacion(ActionEvent event){
+        MenuItem item = (MenuItem) event.getSource();
+        String id = item.getText();
+        ConsultasMaximos maximo= new ConsultasMaximos(con);
+        maximo.actualizarMaximoCreacion(Integer.parseInt(id));
+        menuCreacion.setText(id);
+        
+    }
+    
+    @FXML
+    public void MenuEjecucion(ActionEvent event){
+        MenuItem item = (MenuItem) event.getSource();
+        String id = item.getText();
+        ConsultasMaximos maximo= new ConsultasMaximos(con);
+        ConsultasOperaciones operacionesTotal = new ConsultasOperaciones(con);
+        int totalOperaciones = operacionesTotal.ConsultaOperacionEnEjecucion();
+        int totalEjecucion=Integer.parseInt(id);
+        if(totalOperaciones<totalEjecucion){
+            maximo.actualizarMaximoEjecucion(totalEjecucion);
+            menuEjecucion.setText(id);
+        }else{
+            Alert alerta = new Alert(Alert.AlertType.ERROR, "No se ha seleccionado ninguna operación para ejecutar.");
+            alerta.setTitle("ERROR");
+            alerta.setHeaderText("El número de operaciones activas actualmente es mayor");
+            alerta.showAndWait();
+        }
+        
+        
+        
+        
+    }
+    public void Menu(ActionEvent event) throws IOException {
+
         MenuItem item = (MenuItem) event.getSource();
         String id = item.getId();
         CrearPane crear = new CrearPane();
-        String text = crear.Abrir(id);
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(text));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage newStage = new Stage();
-            newStage.setTitle("Nueva Ventana");
-            newStage.setScene(scene);
-            newStage.show();
-        } catch (Exception e) {
+        String fxmlPath = crear.Abrir(id);
+
+        if (!fxmlPath.endsWith(".fxml")) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
-            alert.setHeaderText("No se pudo cargar la pantalla principal");
-            alert.setContentText(e.getMessage());
+            alert.setHeaderText("Identificador de pantalla no reconocido");
+            alert.setContentText(fxmlPath);
+            System.out.println(fxmlPath);
             alert.showAndWait();
+            return;
         }
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        Parent root = loader.load();
+        Scene scene = new Scene(root);
+        Stage newStage = new Stage();
+
+        String titulo = id.replaceAll("([a-z])([A-Z])", "$1 $2");
+
+        newStage.setTitle(titulo);
+        newStage.setScene(scene);
+        newStage.show();
     }
 
     @FXML
     public void Pausa(ActionEvent event) {
         Button boton = (Button) event.getSource();
         String idBoton = boton.getId();
-        tareasPausadas.add(idBoton);
-        aplicarAccionACheckbox(idBoton, cb -> cb.setDisable(true));
+        String tareaId = idBoton.replace("_btnPausa", "");
+        tareasPausadas.add(tareaId);
+
+        ConsultaInstrucciones ins = new ConsultaInstrucciones(con);
+        List<String> instrucciones = ins.instruccionesAsociadas(tareaId);
+        if (instrucciones != null) {
+            for (String instruccion : instrucciones) {
+                CheckBox checkbox = checkBoxesMap.get(tareaId + "_" + instruccion);
+                if (checkbox != null) {
+                    checkbox.setDisable(true);
+                }
+            }
+        }
     }
 
     @FXML
     public void Reanudar(ActionEvent event) {
         Button boton = (Button) event.getSource();
         String idBoton = boton.getId();
-        tareasPausadas.remove(idBoton);
-        actualizarEstadosDeDependencias(checkBoxesMap, dependenciasPorTarea);
+        String tareaId = idBoton.replace("_btnReanudar", "");
+        tareasPausadas.add(tareaId);
+
+        ConsultaInstrucciones ins = new ConsultaInstrucciones(con);
+        List<String> instrucciones = ins.instruccionesAsociadas(tareaId);
+
+        if (instrucciones != null) {
+            for (String parte : instrucciones) {
+                CheckBox checkbox = checkBoxesMap.get(tareaId + "_" + parte);
+                if (checkbox != null) {
+                    checkbox.setDisable(false);
+                }
+            }
+        }
     }
 
     @FXML
     public void Reiniciar(ActionEvent event) {
         Button boton = (Button) event.getSource();
         String idBoton = boton.getId();
-        if (tareasPausadas.contains(idBoton)) {
-            return;
+        String tareaId = idBoton.replace("_btnReiniciar", "");
+
+        ConsultaInstrucciones ins = new ConsultaInstrucciones(con);
+        List<String> instrucciones = ins.instruccionesAsociadas(tareaId);
+
+        ConsultasTareas consultaTarea = new ConsultasTareas(con);
+        List<Tareas> listaTareas = consultaTarea.ConsultaTareasPorOperacion(ejecutar);
+        Alert alerta;
+
+        if (instrucciones != null) {
+            for (String parte : instrucciones) {
+                ins.cambiarEstadoInstruccion(parte, "Pendiente");
+                CheckBox checkbox = checkBoxesMap.get(tareaId + "_" + parte);
+                if (checkbox != null) {
+                    checkbox.setSelected(false);
+                    checkbox.setDisable(false);
+                }
+            }
         }
-        aplicarAccionACheckbox(idBoton, cb -> cb.setSelected(false));
-        actualizarEstadosDeDependencias(checkBoxesMap, dependenciasPorTarea);
+
+        tareasPausadas.remove(tareaId);
     }
 
     @FXML
-    private void Ejecutar() {
+    private void EjecutarOperacion() {
         if (ejecutar == null || ejecutar.trim().isEmpty()) {
             Alert alerta = new Alert(Alert.AlertType.WARNING, "No se ha seleccionado ninguna operación para ejecutar.");
             alerta.setTitle("Atención");
@@ -188,8 +305,20 @@ public class PantallaPrincipalController {
             alerta.showAndWait();
             return;
         }
-        ConsultasOperaciones consulta = new ConsultasOperaciones();
-        boolean exito = consulta.activarOperacion(ejecutar);
+        
+                
+                
+        ConsultasOperaciones consulta = new ConsultasOperaciones(con);
+        int totalOperaciones= consulta.ConsultaOperacionEnEjecucion();
+        int maximoEjec =  Integer.parseInt(menuEjecucion.getText());
+        System.out.println("Total de operaciones: "+totalOperaciones);
+        System.out.println("Total de operaciones a ejecutar: "+maximoEjec);
+        boolean exito=false;
+        if(totalOperaciones<maximoEjec){
+            System.out.println("totalOperaciones<maximoEjec ");
+            exito = consulta.actualizarEstadoOperacion(ejecutar, "En ejecucion");
+        }
+        
         Alert alerta;
         if (exito) {
             alerta = new Alert(Alert.AlertType.INFORMATION, "La operación '" + ejecutar + "' se ha puesto en ejecución.");
@@ -201,10 +330,37 @@ public class PantallaPrincipalController {
             alerta.setHeaderText("Falló la ejecución");
         }
         alerta.showAndWait();
+        refrescarComponentesVisuales();
     }
 
     @FXML
-    private void Detener() {
+    private void PausarOperacion() {
+        if (ejecutar == null || ejecutar.trim().isEmpty()) {
+            Alert alerta = new Alert(Alert.AlertType.WARNING, "No se ha seleccionado ninguna operación para ejecutar.");
+            alerta.setTitle("Atención");
+            alerta.setHeaderText("Operación no seleccionada");
+            alerta.showAndWait();
+            return;
+        }
+        ConsultasOperaciones consulta = new ConsultasOperaciones(con);
+        boolean exito = consulta.actualizarEstadoOperacion(ejecutar, "En pausa");
+        Alert alerta;
+        if (exito) {
+            alerta = new Alert(Alert.AlertType.INFORMATION, "La operación '" + ejecutar + "' se ha puesto en pausa");
+            alerta.setTitle("Éxito");
+            alerta.setHeaderText("Operación en pausa");
+        } else {
+            alerta = new Alert(Alert.AlertType.ERROR, "No se pudo pausar la operación '" + ejecutar + "'.");
+            alerta.setTitle("Error");
+            alerta.setHeaderText("Falló la ejecución");
+        }
+        alerta.showAndWait();
+        refrescarComponentesVisuales();
+
+    }
+
+    @FXML
+    private void DetenerOperacion() {
         if (ejecutar == null || ejecutar.trim().isEmpty()) {
             Alert alerta = new Alert(Alert.AlertType.WARNING, "No se ha seleccionado ninguna operación para detener.");
             alerta.setTitle("Atención");
@@ -212,10 +368,20 @@ public class PantallaPrincipalController {
             alerta.showAndWait();
             return;
         }
-        ConsultasOperaciones consulta = new ConsultasOperaciones();
-        boolean exito = consulta.detener(ejecutar);
+        ConsultasOperaciones consulta = new ConsultasOperaciones(con);
+        boolean exito = consulta.actualizarEstadoOperacion(ejecutar, "Detenida");
+        ConsultasTareas consultaTarea = new ConsultasTareas(con);
+        List<Tareas> listaTareas = consultaTarea.ConsultaTareasPorOperacion(ejecutar);
         Alert alerta;
         if (exito) {
+            for (Tareas tarea : listaTareas) {
+                ConsultaInstrucciones instruccion = new ConsultaInstrucciones(con);
+                List<String> instrucciones = instruccion.instruccionesAsociadas(tarea.getNombreTarea());
+                for (String instruccionVerificar : instrucciones) {
+                    instruccion.cambiarEstadoInstruccion(instruccionVerificar, "Pendiente");
+                }
+            }
+
             alerta = new Alert(Alert.AlertType.INFORMATION, "La operación '" + ejecutar + "' se ha detenido (estado cambiado a 'Creado').");
             alerta.setTitle("Éxito");
             alerta.setHeaderText("Operación detenida");
@@ -225,147 +391,94 @@ public class PantallaPrincipalController {
             alerta.setHeaderText("Falló la detención");
         }
         alerta.showAndWait();
+        refrescarComponentesVisuales();
     }
 
     private void cargarTareasEnTabla(String operacionSeleccionada) {
+
+        ConsultasOperaciones opera = new ConsultasOperaciones(con);
+        List<Operacion> validarPausa = opera.ConsultaOperacion(operacionSeleccionada);
+        for (Operacion validacion : validarPausa) {
+            if (validacion.getEstado().equals("En pausa") || validacion.getEstado().equals("Detenida")) {
+                cargarGestor(operacionSeleccionada, true);
+            } else {
+                cargarGestor(operacionSeleccionada, false);
+            }
+        }
         filasTarea.clear();
-        ConsultasOperaciones consultasSql = new ConsultasOperaciones();
-        List<Operacion> operaciones = consultasSql.ConsultaOperacion(operacionSeleccionada);
-        if (operaciones != null && !operaciones.isEmpty()) {
-            Operacion operacion = operaciones.get(0);
-            String tareasStr = operacion.getTareasAsociadas();
-            if (tareasStr != null && !tareasStr.trim().isEmpty()) {
-                String[] tareasArray = tareasStr.split(",");
-                for (String tarea : tareasArray) {
-                    filasTarea.add(new FilaTareas(tarea.trim()));
+
+        ConsultasTareas consultasTareas = new ConsultasTareas(con);
+        List<Tareas> tareas = consultasTareas.ConsultaTareasPorOperacion(operacionSeleccionada);
+        Map<String, List<Tareas>> tareasPorEstado = new LinkedHashMap<>();
+        String[] ordenEstados = {"En ejecucion", "En pausa", "Detenida", "No ejecutada", "Finalizada"};
+        for (String est : ordenEstados) {
+            tareasPorEstado.put(est, new ArrayList<>());
+        }
+        for (Tareas tarea : tareas) {
+            String estadoTarea = tarea.getEstado();
+            if (tareasPorEstado.containsKey(estadoTarea)) {
+                tareasPorEstado.get(estadoTarea).add(tarea);
+            } else {
+                tareasPorEstado.computeIfAbsent(estadoTarea, k -> new ArrayList<>()).add(tarea);
+            }
+        }
+        for (String est : ordenEstados) {
+            List<Tareas> tareasEstado = tareasPorEstado.get(est);
+            if (tareasEstado != null) {
+                for (Tareas tarea : tareasEstado) {
+                    filasTarea.add(new FilaTareas(tarea.getNombreTarea(), est));
                 }
-            } 
-        } 
+            }
+        }
     }
 
     private void cargarOperacionesEnTabla() {
         filasOperaciones.clear();
         fp_Gestor.getChildren().clear();
-        ConsultasOperaciones consultas = new ConsultasOperaciones();
-        ArrayList<String> listaOperacion = consultas.ListaOperaciones();
-        if (listaOperacion != null && !listaOperacion.isEmpty()) {
-            for (String operacion : listaOperacion) {
-                filasOperaciones.add(new FilaOperacion(operacion));
-                cargarGestor(operacion);
-            }
-        } 
-    }
 
-    private void cargarGestor(String operacion) {
-        ConsultasOperaciones consultasql = new ConsultasOperaciones();
-        ConsultasTareas consultaSQL = new ConsultasTareas();
-        List<Operacion> operacionConsultada = consultasql.ConsultaOperacionActiva(operacion);
-        checkBoxesMap.clear();
-        dependenciasPorTarea.clear();
-        if (operacionConsultada != null && !operacionConsultada.isEmpty()) {
-            for (Operacion operacionExtraer : operacionConsultada) {
-                TitledPane titledPane = new TitledPane();
-                titledPane.setText(operacionExtraer.getNombreOperacion());
-                VBox vbox = new VBox(5);
-                String dependenciaConsulta = operacionExtraer.getTareasAsociadas();
-                String[] dependencias = dependenciaConsulta.split(",");
-                for (String parte : dependencias) {
-                    try {
-                        List<Tareas> tareaConsultada = consultaSQL.ConsultaTareas(parte.trim());
-                        if (tareaConsultada != null && !tareaConsultada.isEmpty()) {
-                            TitledPane titledPaneTarea = new TitledPane();
-                            titledPaneTarea.setText(parte.trim());
-                            VBox vboxTareas = new VBox(5);
-                            for (Tareas tareaExtraer : tareaConsultada) {
-                                String[] instrucciones = tareaExtraer.getInstruccion().split(",");
-                                String tareaClave = operacionExtraer.getNombreOperacion() + "_" + parte.trim();
-                                List<String> depsList = new ArrayList<>();
-                                if (tareaExtraer.getDependencia() != null && !tareaExtraer.getDependencia().isBlank()) {
-                                    depsList = Arrays.stream(tareaExtraer.getDependencia().split(","))
-                                            .map(String::trim)
-                                            .collect(Collectors.toList());
-                                }
-                                dependenciasPorTarea.put(tareaClave, depsList);
-                                for (String instruccion : instrucciones) {
-                                    String idCheckBox = tareaClave + "_" + instruccion.trim();
-                                    CheckBox checkbox = new CheckBox(instruccion.trim());
-                                    checkbox.setId(idCheckBox);
-                                    checkbox.setDisable(!depsList.isEmpty());
-                                    checkbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                                        actualizarEstadosDeDependencias(checkBoxesMap, dependenciasPorTarea);
-                                    });
-                                    vboxTareas.getChildren().add(checkbox);
-                                    checkBoxesMap.put(idCheckBox, checkbox);
-                                }
-                                ButtonBar estados = new ButtonBar();
-                                if (tareaExtraer.getValorPausa()) {
-                                    Button btnPausa = new Button("⏸");
-                                    btnPausa.setId(tareaClave);
-                                    btnPausa.setOnAction(this::Pausa);
-                                    estados.getButtons().add(btnPausa);
-                                    Button btnReanudar = new Button("▶");
-                                    btnReanudar.setId(tareaClave);
-                                    btnReanudar.setOnAction(this::Reanudar);
-                                    estados.getButtons().add(btnReanudar);
-                                    Button btnReiniciar = new Button("🔄");
-                                    btnReiniciar.setId(tareaClave);
-                                    btnReiniciar.setOnAction(this::Reiniciar);
-                                    estados.getButtons().add(btnReiniciar);
-                                }
-                                vboxTareas.getChildren().add(estados);
-                            }
-                            titledPaneTarea.setContent(vboxTareas);
-                            vbox.getChildren().add(titledPaneTarea);
-                        }
-                    } catch (Exception e) {
-                        Alert alerta = new Alert(Alert.AlertType.ERROR, "Error al consultar tarea: " + parte.trim() + "\n" + e.getMessage());
-                        alerta.showAndWait();
+        ConsultasOperaciones consultas = new ConsultasOperaciones(con);
+        ArrayList<String[]> listaOperacion = consultas.ListaOperaciones();
+
+        if (listaOperacion != null && !listaOperacion.isEmpty()) {
+            Map<String, List<String[]>> operacionesPorEstado = new LinkedHashMap<>();
+            String[] ordenEstados = {"En ejecucion", "En pausa", "Detenida", "No ejecutada", "Finalizada"};
+            for (String estado : ordenEstados) {
+                operacionesPorEstado.put(estado, new ArrayList<>());
+            }
+            for (String[] operacion : listaOperacion) {
+                String estado = operacion[1];
+                if (operacionesPorEstado.containsKey(estado)) {
+                    operacionesPorEstado.get(estado).add(operacion);
+                } else {
+                    operacionesPorEstado.computeIfAbsent(estado, k -> new ArrayList<>()).add(operacion);
+                }
+            }
+            for (String estado : ordenEstados) {
+                List<String[]> lista = operacionesPorEstado.get(estado);
+                if (lista != null) {
+                    for (String[] operacion : lista) {
+                        String nombre = operacion[0];
+                        SimpleStringProperty operacionProp = new SimpleStringProperty(nombre);
+                        filasOperaciones.add(new FilaOperacion(operacionProp, operacion[1]));
+
                     }
                 }
-                titledPane.setContent(vbox);
-                fp_Gestor.getChildren().add(titledPane);
             }
-            actualizarEstadosDeDependencias(checkBoxesMap, dependenciasPorTarea);
-        } 
-    }
-
-    private void aplicarAccionACheckbox(String tareaClave, java.util.function.Consumer<CheckBox> accion) {
-        checkBoxesMap.entrySet().stream()
-                .filter(e -> e.getKey().startsWith(tareaClave))
-                .forEach(e -> accion.accept(e.getValue()));
-    }
-
-    private void actualizarEstadosDeDependencias(Map<String, CheckBox> checkBoxesMap, Map<String, List<String>> dependenciasPorTarea) {
-        for (Map.Entry<String, List<String>> entry : dependenciasPorTarea.entrySet()) {
-            String tareaClave = entry.getKey();
-            List<String> dependencias = entry.getValue();
-            boolean todasDependenciasMarcadas = true;
-
-            for (String dep : dependencias) {
-                String depPrefix = tareaClave.split("_")[0] + "_" + dep;
-
-                // ✅ Verifica que TODAS las instrucciones de la dependencia estén marcadas
-                boolean todasInstruccionesMarcadas = checkBoxesMap.entrySet().stream()
-                        .filter(e -> e.getKey().startsWith(depPrefix))
-                        .allMatch(e -> e.getValue().isSelected());
-
-                if (!todasInstruccionesMarcadas) {
-                    todasDependenciasMarcadas = false;
-                    break;
-                }
-            }
-
-            boolean habilitar = todasDependenciasMarcadas;
-
-            checkBoxesMap.entrySet().stream()
-                    .filter(e -> e.getKey().startsWith(tareaClave))
-                    .forEach(e -> {
-                        e.getValue().setDisable(!habilitar);
-                        if (!habilitar) {
-                            e.getValue().setSelected(false); // ⬅️ Se desmarca si está deshabilitado
-                        }
-                    });
         }
+    }
+
+    private void cargarGestor(String operacion, boolean pausa) {
+        ConsultasOperaciones opera = new ConsultasOperaciones(con);
+
+        PaneDinamico builder = new PaneDinamico(checkBoxesMap, dependenciasPorTarea, this);
+        HBox pane = builder.cargarGestor(operacion, pausa);
+        pane.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        pane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        fp_Gestor.getChildren().clear();
+        fp_Gestor.getChildren().add(pane);
+        pane.prefWidthProperty().bind(fp_Gestor.widthProperty());
+        pane.prefHeightProperty().bind(fp_Gestor.heightProperty());
+
     }
 
     public static PantallaPrincipalController getInstancia() {
@@ -378,4 +491,68 @@ public class PantallaPrincipalController {
         fp_Gestor.getChildren().clear();
         initialize();
     }
+
+    @FXML
+    public void CheckBoxSelect(ActionEvent event) {
+        CheckBox cb = (CheckBox) event.getSource();
+        String texto = cb.getId();  // Usar el id del CheckBox
+        boolean seleccionado = cb.isSelected();
+
+        if (texto == null || !texto.contains("_")) {
+            System.out.println("Id del CheckBox inválido.");
+            return;
+        }
+
+        String[] partes = texto.split("_");
+        if (partes.length < 2) {
+            System.out.println("Id del CheckBox no contiene información suficiente.");
+            return;
+        }
+
+        String tareaId = partes[0];
+        String instruccion = partes[1];
+        ConsultasTareas consultaTarea = new ConsultasTareas(con);
+        String nombreOperacion = consultaTarea.obtenerNombreOperacionPorTarea(tareaId);
+        try {
+            if (ins == null) {
+                ins = new ConsultaInstrucciones(con);
+            }
+            String nuevoEstado = seleccionado ? "Completado" : "Pendiente";
+            boolean exito = ins.cambiarEstadoInstruccionPorTarea(tareaId, instruccion, nuevoEstado);
+            consultaTarea.ModificarEstado(tareaId, "En ejecucion");
+            if (exito) {
+                if (seleccionado) {
+                    boolean todasInstruccionesCompletas = ins.estanTodasCompletadas(tareaId);
+                    if (todasInstruccionesCompletas) {
+
+                        consultaTarea.ModificarEstado(tareaId, "Finalizada");
+
+                        boolean todasTareasCompletas;
+                        ConsultasOperaciones consulta = new ConsultasOperaciones(con);
+                        boolean exitotareas = consultaTarea.estanTodasTareasFinalizadas(nombreOperacion);
+                        if (exitotareas) {
+                            consulta.actualizarEstadoOperacion(nombreOperacion, "Finalizada");
+                        }
+
+                    }
+
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("⚠️ Error al procesar el CheckBox: " + e.getMessage());
+            e.printStackTrace();
+        }
+        ConsultasOperaciones opera = new ConsultasOperaciones(con);
+        List<Operacion> validarPausa = opera.ConsultaOperacion(nombreOperacion);
+        for (Operacion validacion : validarPausa) {
+            if (validacion.getEstado().equals("En pausa") || validacion.getEstado().equals("Detenida")) {
+                cargarGestor(nombreOperacion, true);
+            } else {
+                cargarGestor(nombreOperacion, false);
+            }
+        }
+
+    }
+
 }

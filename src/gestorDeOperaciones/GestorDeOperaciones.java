@@ -1,9 +1,6 @@
 package gestorDeOperaciones;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -58,7 +55,7 @@ public class GestorDeOperaciones extends Application {
                 + "idOperacion INT AUTO_INCREMENT PRIMARY KEY, "
                 + "Nombre VARCHAR(45) NOT NULL UNIQUE, "
                 + "Limite INT NOT NULL, "
-                + "Tareas CLOB, "
+                + "Salida VARCHAR(45) NOT NULL, "
                 + "Estado VARCHAR(45) NOT NULL)";
 
         String sqlTarea = "CREATE TABLE IF NOT EXISTS tarea ("
@@ -69,18 +66,37 @@ public class GestorDeOperaciones extends Application {
                 + "Reanudar BOOLEAN NOT NULL, "
                 + "Reiniciar BOOLEAN NOT NULL, "
                 + "Dependencia VARCHAR(45), "
-                + "Instruccion VARCHAR(45) NOT NULL, "
-                + "Estado VARCHAR(45) NOT NULL)";
+                + "Salida VARCHAR(45) NOT NULL, "
+                + "Estado VARCHAR(45) NOT NULL, "
+                + "NombreOperacion VARCHAR(45), "
+                + "FOREIGN KEY (NombreOperacion) REFERENCES operacion(Nombre))";
 
+        String sqlInstruccion = "CREATE TABLE IF NOT EXISTS instruccion ("
+                + "ID INT AUTO_INCREMENT UNIQUE PRIMARY KEY, "
+                + "Nombre VARCHAR(45) NOT NULL , "
+                + "nombreTarea VARCHAR(45) NOT NULL,"
+                + "Estado VARCHAR(45) NOT NULL, "
+                + "FOREIGN KEY (nombreTarea) REFERENCES tarea(Nombre))";
+        
+        String sqlMaximos = "CREATE TABLE IF NOT EXISTS maximos ("
+        + "idMaximos VARCHAR(45) PRIMARY KEY, "
+        + "MaximoEjecucion INT NOT NULL, "
+        + "MaximoCreacion INT NOT NULL"
+        + ");";
+
+        
         try (Statement stmt = con.createStatement()) {
             stmt.execute(sqlOperacion);
             stmt.execute(sqlTarea);
+            stmt.execute(sqlInstruccion);
+            stmt.execute(sqlMaximos);
             System.out.println("Tablas inicializadas o ya existentes.");
         } catch (SQLException e) {
             System.err.println("Error al crear tablas: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 
     public static Connection getConnection() {
         return con;
