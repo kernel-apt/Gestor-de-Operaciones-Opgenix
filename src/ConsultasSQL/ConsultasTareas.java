@@ -1,7 +1,6 @@
 package ConsultasSQL;
 
 import Objetos.Tareas;
-import gestorDeOperaciones.GestorDeOperaciones;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class ConsultasTareas {
         cadenaTareas.clear();
         try {
             Statement st = con.createStatement();
-            // Consulta modificada para filtrar solo tareas con NombreOperacion NULL
             ResultSet rs = st.executeQuery("SELECT Nombre FROM tarea WHERE NombreOperacion IS NULL");
             while (rs.next()) {
                 cadenaTareas.add(rs.getString("Nombre"));
@@ -64,16 +62,13 @@ public class ConsultasTareas {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         int pendientes = rs.getInt(1);
-                        // Si no hay tareas pendientes (Estado diferente a Finalizada), entonces todas están finalizadas
-                        return pendientes == 0;
+                       return pendientes == 0;
                     }
                 }
             } catch (SQLException e) {
-                // Aquí puedes manejar el error, lanzar excepción o imprimir mensaje
                 e.printStackTrace();
             }
         }
-        // Si no hay conexión o hubo error, retornamos false
         return false;
     }
 
@@ -84,7 +79,6 @@ public class ConsultasTareas {
 
             try (
                     PreparedStatement psTotal = con.prepareStatement(sqlTotal); PreparedStatement psFinalizadas = con.prepareStatement(sqlFinalizadas)) {
-                // Total de tareas
                 psTotal.setString(1, operacion);
                 ResultSet rsTotal = psTotal.executeQuery();
                 int total = 0;
@@ -92,7 +86,6 @@ public class ConsultasTareas {
                     total = rsTotal.getInt(1);
                 }
 
-                // Total de tareas finalizadas
                 psFinalizadas.setString(1, operacion);
                 ResultSet rsFinalizadas = psFinalizadas.executeQuery();
                 int finalizadas = 0;
@@ -107,14 +100,14 @@ public class ConsultasTareas {
                 e.printStackTrace();
             }
         }
-        return 1000; // En caso de error o si no hay tareas
+        return 100; 
     }
 
     public ArrayList<Integer> ListaTareasCantidad() {
         cantidades.clear();
-        cantidades.add(0); // Total de operaciones
-        cantidades.add(0); // Operaciones en ejecución
-        cantidades.add(0); // Tareas en ejecución
+        cantidades.add(0); 
+        cantidades.add(0); 
+        cantidades.add(0); 
 
         try {
             Statement st = con.createStatement();
@@ -217,11 +210,9 @@ public class ConsultasTareas {
             ps.setString(6, tarea.getDependencia());
             ps.setString(7, tarea.getSalida());
             ps.setString(8, "No ejecutada");
-            ps.setNull(9, Types.VARCHAR);  // No se asigna operación al crear
+            ps.setNull(9, Types.VARCHAR);  
 
             creado = ps.executeUpdate() > 0;
-
-            // Hacer commit solo si la conexión está en modo manual
             if (!con.getAutoCommit()) {
                 con.commit();
             }

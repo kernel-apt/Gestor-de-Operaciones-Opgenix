@@ -145,7 +145,6 @@ public class PaneDinamico {
             );
         }
 
-        // Tareas asociadas
         List<String> tareasAsociadas = consultasql.buscarTareasPorOperacion(operacion);
 
         for (String tarea : tareasAsociadas) {
@@ -165,24 +164,20 @@ public class PaneDinamico {
                     for (String instruccion : instrucciones) {
                         boolean completado = consultaInstruccion.estaInstruccionCompletada(tarea, instruccion);
                         lbSalida.setText(lbSalida.getText()
-                                + "\n- " + instruccion + ": " + (completado ? "✅ Completada" : "❌ Pendiente"));
-                       
+                                + "\n\t\t\t- " + instruccion + ": " + (completado ? "✅ Completada" : "❌ Pendiente"));
+
                     }
                 }
 
                 int porcentaje = consultaInstruccion.obtenerPorcentajeCompletado(tarea);
-                 List<Tareas> tareaCompleta= consultaSQL.ConsultaTareasPorOperacion(operacion);
-                             for(Tareas tareaDetalle: tareaCompleta){
-                                 if(porcentaje ==100){
-                                     lbSalida.setText(lbSalida.getText()+
-                                             "\nLa tarea fue completada con exito");
-                                 }{
-                                 lbSalida.setText(lbSalida.getText()+
-                                             "\nLa tarea aun no fue completada");
-                             }
-                                }
+                if (porcentaje == 100) {
+                    lbSalida.setText(lbSalida.getText() + "\n\t La tarea fue completada con éxito");
+                } else {
+                    lbSalida.setText(lbSalida.getText() + "\n\t La tarea aún no fue completada");
+                }
+
                 lbSalida.setText(lbSalida.getText()
-                        + "\nAvance de la tarea \"" + tarea + "\": " + porcentaje + "%\n");
+                        + "\n\tAvance de la tarea \"" + tarea + "\": " + porcentaje + "%\n");
 
             } catch (Exception e) {
                 e.printStackTrace();

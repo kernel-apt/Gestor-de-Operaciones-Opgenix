@@ -20,7 +20,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-public class VisorTareasController {
+public class EditorTareasController {
 
     @FXML
     private Button btn_AgregarDependencia;
@@ -81,24 +81,24 @@ public class VisorTareasController {
         tbv_Tareas.setItems(filasTarea);
 
         cargarTareasEnTabla();
-        AgregarTareas agregarTareasMenu = new AgregarTareas();
-        agregarTareasMenu.cargarTareasEnMenu(con, spm_Tareas, this::SeleccionarMenuItem);
-
         tbv_Tareas.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 cargarDatos(newSelection);
+                String nombreTarea=newSelection.getTarea();
                 setControlesHabilitados(true);
+                AgregarTareas agregarTareasMenu = new AgregarTareas();
+                agregarTareasMenu.cargarTareasEnMenuEditar(con, spm_Tareas, this::SeleccionarMenuItem,nombreTarea);
+                MenuItem primerItem = spm_Tareas.getItems().get(0);
+                String textoMenuItem = primerItem.getText();
+
+                if (textoMenuItem.equals("No hay tareas disponibles")) {
+                    btn_AgregarDependencia.setDisable(true);
+                    btn_DescartarDependencia.setDisable(true);
+                }
             }
         });
 
-        Connection con = GestorDeOperaciones.getConnection();
-        MenuItem primerItem = spm_Tareas.getItems().get(0);
-        String textoMenuItem = primerItem.getText();
-
-        if (textoMenuItem.equals("No hay tareas creadas")) {
-            btn_AgregarDependencia.setDisable(true);
-            btn_DescartarDependencia.setDisable(true);
-        }
+        
         setControlesHabilitados(false);
     }
 
@@ -109,15 +109,25 @@ public class VisorTareasController {
         spm_Tareas.setText(texto);
     }
 
-    @FXML
-    void AgregarInstruccion(ActionEvent event) {
-        nombreInstruccion = tf_NombreInstruccion.getText();
-        if (!nombreInstruccion.isEmpty()) {
-            FilaInstruccion nueva = new FilaInstruccion(nombreInstruccion);
-            filasInstruccion.add(nueva);
-            tf_NombreInstruccion.clear();
+   @FXML
+void AgregarInstruccion(ActionEvent event) {
+    nombreInstruccion = tf_NombreInstruccion.getText().trim();
+
+    if (!nombreInstruccion.isEmpty()) {
+        boolean yaExiste = filasInstruccion.stream()
+                .anyMatch(f -> f.getInstruccion().equalsIgnoreCase(nombreInstruccion));
+
+        if (yaExiste) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Instrucción duplicada", "La instrucción ya ha sido agregada.");
+            return;
         }
+
+        FilaInstruccion nueva = new FilaInstruccion(nombreInstruccion);
+        filasInstruccion.add(nueva);
+        tf_NombreInstruccion.clear();
     }
+}
+
 
     @FXML
     void AgregarDependencia(ActionEvent event) {
@@ -127,7 +137,7 @@ public class VisorTareasController {
         if (nombreDependencia.isEmpty() || nombreDependencia.equals("Tareas")) {
             return;
         }
-
+        
         if (nombreDependencia.equals(nombreTareaActual)) {
             mostrarAlerta(
                     Alert.AlertType.WARNING,
@@ -139,6 +149,7 @@ public class VisorTareasController {
 
         FilaDependencia nueva = new FilaDependencia(nombreDependencia);
         filasDependencia.add(nueva);
+        spm_Tareas.getItems().removeIf(item -> item.getText().equals(nombreDependencia));
         tf_NombreInstruccion.clear();
     }
 
@@ -195,15 +206,17 @@ public class VisorTareasController {
         ConsultaInstrucciones consultaInstruccion = new ConsultaInstrucciones(con);
         ConsultasTareas crearTarea = new ConsultasTareas(con);
 
-        Boolean creado = crearTarea.Modificar(tarea);
         for (FilaInstruccion fila : filasInstruccion) {
             String nombreInstruccion = fila.getInstruccion();
             boolean exitoInstruccion = consultaInstruccion.crearInstruccion(nombreInstruccion, nombreTarea);
             if (!exitoInstruccion) {
                 mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo guardar la instrucción: " + nombreInstruccion);
+                
                 return;
             }
         }
+        
+        Boolean creado = crearTarea.Modificar(tarea);
         if (creado) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han guardado correctamente.");
             refrescarPantalla();
@@ -278,7 +291,7 @@ public class VisorTareasController {
             if (tareaConsultada != null) {
                 tf_NombreTarea.setText(tareaConsultada.getNombreTarea());
                 tf_SalidaEsperada.setText(tareaConsultada.getSalida());
-
+                tf_Descripcion.setText(tareaConsultada.getDescripcion());
                 filasInstruccion.clear();
                 filasDependencia.clear();
                 ConsultaInstrucciones instrucciones = new ConsultaInstrucciones(con);
@@ -303,6 +316,7 @@ public class VisorTareasController {
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay tareas creadas");
         }
+       
     }
 
     private void setControlesHabilitados(boolean habilitado) {

@@ -117,12 +117,12 @@ public class PantallaPrincipalController {
         ConsultasMaximos maximos = new ConsultasMaximos(con);
         maximos.crearMaximos();
         Maximos maximo = maximos.obtenerMaximos();
-        if(maximo!=null){
+        if (maximo != null) {
             menuEjecucion.setText(String.valueOf(maximo.getMaximoEjecucion()));
-            menuCreacion.setText(String.valueOf( maximo.getMaximoCreacion()));
+            menuCreacion.setText(String.valueOf(maximo.getMaximoCreacion()));
 
         }
-        
+
         tbc_Operaciones.setCellValueFactory(new PropertyValueFactory<>("operacion"));
         tbc_EstadoOperacion.setCellValueFactory(new PropertyValueFactory<>("estado"));
         tbc_Tareas.setCellValueFactory(new PropertyValueFactory<>("tarea"));
@@ -130,7 +130,7 @@ public class PantallaPrincipalController {
 
         tbv_Operaciones.setItems(filasOperaciones);
         tbv_Tareas.setItems(filasTarea);
-
+        tbv_Tareas.setSelectionModel(null);
         cargarOperacionesEnTabla();
 
         tbv_Operaciones.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -143,14 +143,6 @@ public class PantallaPrincipalController {
             }
         });
 
-        // Listener para selección de tarea (si lo necesitas más adelante)
-        tbv_Tareas.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                // Lógica para tarea seleccionada
-            }
-        });
-
-        // Obtener y mostrar conteo de tareas y operaciones
         ConsultasTareas consultas = new ConsultasTareas(con);
         ArrayList<Integer> cantidades = consultas.ListaTareasCantidad();
         if (cantidades.size() >= 3) {
@@ -168,39 +160,37 @@ public class PantallaPrincipalController {
     private void Salir(ActionEvent event) {
         Platform.exit();
     }
-    
+
     @FXML
-    public void MenuCreacion(ActionEvent event){
+    public void MenuCreacion(ActionEvent event) {
         MenuItem item = (MenuItem) event.getSource();
         String id = item.getText();
-        ConsultasMaximos maximo= new ConsultasMaximos(con);
+        ConsultasMaximos maximo = new ConsultasMaximos(con);
         maximo.actualizarMaximoCreacion(Integer.parseInt(id));
         menuCreacion.setText(id);
-        
+
     }
-    
+
     @FXML
-    public void MenuEjecucion(ActionEvent event){
+    public void MenuEjecucion(ActionEvent event) {
         MenuItem item = (MenuItem) event.getSource();
         String id = item.getText();
-        ConsultasMaximos maximo= new ConsultasMaximos(con);
+        ConsultasMaximos maximo = new ConsultasMaximos(con);
         ConsultasOperaciones operacionesTotal = new ConsultasOperaciones(con);
         int totalOperaciones = operacionesTotal.ConsultaOperacionEnEjecucion();
-        int totalEjecucion=Integer.parseInt(id);
-        if(totalOperaciones<totalEjecucion){
+        int totalEjecucion = Integer.parseInt(id);
+        if (totalOperaciones < totalEjecucion) {
             maximo.actualizarMaximoEjecucion(totalEjecucion);
             menuEjecucion.setText(id);
-        }else{
+        } else {
             Alert alerta = new Alert(Alert.AlertType.ERROR, "No se ha seleccionado ninguna operación para ejecutar.");
             alerta.setTitle("ERROR");
             alerta.setHeaderText("El número de operaciones activas actualmente es mayor");
             alerta.showAndWait();
         }
-        
-        
-        
-        
+
     }
+
     public void Menu(ActionEvent event) throws IOException {
 
         MenuItem item = (MenuItem) event.getSource();
@@ -305,31 +295,25 @@ public class PantallaPrincipalController {
             alerta.showAndWait();
             return;
         }
-        
-                
-                
+
         ConsultasOperaciones consulta = new ConsultasOperaciones(con);
-        int totalOperaciones= consulta.ConsultaOperacionEnEjecucion();
-        int maximoEjec =  Integer.parseInt(menuEjecucion.getText());
-        System.out.println("Total de operaciones: "+totalOperaciones);
-        System.out.println("Total de operaciones a ejecutar: "+maximoEjec);
-        boolean exito=false;
-        if(totalOperaciones<maximoEjec){
+        int totalOperaciones = consulta.ConsultaOperacionEnEjecucion();
+        int maximoEjec = Integer.parseInt(menuEjecucion.getText());
+        System.out.println("Total de operaciones: " + totalOperaciones);
+        System.out.println("Total de operaciones a ejecutar: " + maximoEjec);
+        boolean exito = false;
+        if (totalOperaciones < maximoEjec) {
             System.out.println("totalOperaciones<maximoEjec ");
             exito = consulta.actualizarEstadoOperacion(ejecutar, "En ejecucion");
         }
-        
+
         Alert alerta;
-        if (exito) {
-            alerta = new Alert(Alert.AlertType.INFORMATION, "La operación '" + ejecutar + "' se ha puesto en ejecución.");
-            alerta.setTitle("Éxito");
-            alerta.setHeaderText("Operación ejecutada");
-        } else {
+        if (!exito) {
             alerta = new Alert(Alert.AlertType.ERROR, "No se pudo ejecutar la operación '" + ejecutar + "'.");
             alerta.setTitle("Error");
             alerta.setHeaderText("Falló la ejecución");
+            alerta.showAndWait();
         }
-        alerta.showAndWait();
         refrescarComponentesVisuales();
     }
 
@@ -345,16 +329,12 @@ public class PantallaPrincipalController {
         ConsultasOperaciones consulta = new ConsultasOperaciones(con);
         boolean exito = consulta.actualizarEstadoOperacion(ejecutar, "En pausa");
         Alert alerta;
-        if (exito) {
-            alerta = new Alert(Alert.AlertType.INFORMATION, "La operación '" + ejecutar + "' se ha puesto en pausa");
-            alerta.setTitle("Éxito");
-            alerta.setHeaderText("Operación en pausa");
-        } else {
+        if (!exito) {
             alerta = new Alert(Alert.AlertType.ERROR, "No se pudo pausar la operación '" + ejecutar + "'.");
             alerta.setTitle("Error");
             alerta.setHeaderText("Falló la ejecución");
+            alerta.showAndWait();
         }
-        alerta.showAndWait();
         refrescarComponentesVisuales();
 
     }
@@ -382,15 +362,13 @@ public class PantallaPrincipalController {
                 }
             }
 
-            alerta = new Alert(Alert.AlertType.INFORMATION, "La operación '" + ejecutar + "' se ha detenido (estado cambiado a 'Creado').");
-            alerta.setTitle("Éxito");
-            alerta.setHeaderText("Operación detenida");
         } else {
             alerta = new Alert(Alert.AlertType.ERROR, "No se pudo detener la operación '" + ejecutar + "'.");
             alerta.setTitle("Error");
             alerta.setHeaderText("Falló la detención");
+            alerta.showAndWait();
         }
-        alerta.showAndWait();
+
         refrescarComponentesVisuales();
     }
 
@@ -495,7 +473,7 @@ public class PantallaPrincipalController {
     @FXML
     public void CheckBoxSelect(ActionEvent event) {
         CheckBox cb = (CheckBox) event.getSource();
-        String texto = cb.getId();  // Usar el id del CheckBox
+        String texto = cb.getId();  
         boolean seleccionado = cb.isSelected();
 
         if (texto == null || !texto.contains("_")) {

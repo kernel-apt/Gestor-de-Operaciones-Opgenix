@@ -92,23 +92,38 @@ public class CrearTareaController {
         spm_Tareas.setText(item.getText());
     }
 
-    @FXML
-    private void AgregarInstruccion(ActionEvent event) {
-        String instruccion = tf_NombreInstruccion.getText();
-        if (!instruccion.isEmpty()) {
-            filasInstruccion.add(new FilaInstruccion(instruccion));
-            tf_NombreInstruccion.clear();
-        }
-    }
+    
+ 
+    
+   @FXML
+private void AgregarInstruccion(ActionEvent event) {
+    String instruccion = tf_NombreInstruccion.getText().trim();
+    
+    if (!instruccion.isEmpty()) {
+        boolean yaExiste = filasInstruccion.stream()
+                .anyMatch(f -> f.getInstruccion().equalsIgnoreCase(instruccion));
 
-    @FXML
-    private void AgregarDependencia(ActionEvent event) {
-        String dependencia = spm_Tareas.getText();
-        if (!dependencia.isEmpty() && !dependencia.equals("Tareas")) {
-            filasDependencia.add(new FilaDependencia(dependencia));
-            spm_Tareas.setText("Tareas");
+        if (yaExiste) {
+            mostrarAlerta( "Instrucción duplicada", "La instrucción ya ha sido agregada.", Alert.AlertType.WARNING);
+            return;
         }
+
+        filasInstruccion.add(new FilaInstruccion(instruccion));
+        tf_NombreInstruccion.clear();
     }
+}
+
+
+   @FXML
+private void AgregarDependencia(ActionEvent event) {
+    String dependencia = spm_Tareas.getText();
+    if (!dependencia.isEmpty() && !dependencia.equals("Tareas")) {
+        filasDependencia.add(new FilaDependencia(dependencia));
+        spm_Tareas.getItems().removeIf(item -> item.getText().equals(dependencia));
+        spm_Tareas.setText("Tareas");
+    }
+}
+
 
     @FXML
     private void Descartar(ActionEvent event) {

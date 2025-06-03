@@ -92,6 +92,7 @@ public class CrearOperacionesController {
             }
 
             agregarDependenciaSiValida(nombreDependencia, numeroOperaciones);
+            spm_Tareas.getItems().removeIf(item -> item.getText().equals(nombreDependencia));
             spm_Tareas.setText("Tareas");
 
         } catch (NumberFormatException e) {
@@ -151,7 +152,7 @@ public class CrearOperacionesController {
 
             for (FilaDependencia fila : filasDependencia) {
                 String dependencia = fila.getDependencia();
-                ConsultasTareas modificarFK = new ConsultasTareas((java.sql.Connection) con);
+                ConsultasTareas modificarFK = new ConsultasTareas( con);
                 modificarFK.ModificarFK(dependencia, nombreOperacion.trim());
             }
             alerta = new Alert(Alert.AlertType.INFORMATION);

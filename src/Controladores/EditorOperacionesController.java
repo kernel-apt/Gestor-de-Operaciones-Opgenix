@@ -74,7 +74,7 @@ public class EditorOperacionesController {
                 setControlesHabilitados(true);
             }
         });
-
+        
         MenuItem primerItem = spm_Tareas.getItems().get(0);
         String textoMenuItem = primerItem.getText();
 
@@ -108,6 +108,7 @@ public class EditorOperacionesController {
             }
 
             agregarDependenciaSiValida(nombreDependencia, numeroOperaciones);
+            spm_Tareas.getItems().removeIf(item -> item.getText().equals(nombreDependencia));
             spm_Tareas.setText("Tareas");
 
         } catch (NumberFormatException e) {
@@ -181,6 +182,12 @@ public class EditorOperacionesController {
         Operacion operacion = new Operacion(nombreOperacion, numeroOperaciones, salidaEsperada);
         ConsultasOperaciones consultas = new ConsultasOperaciones(con);
         boolean creado = consultas.Modificar(operacion);
+        for (FilaDependencia fila : filasDependencia) {
+                String dependencia = fila.getDependencia();
+                ConsultasTareas modificarFK = new ConsultasTareas( con);
+                modificarFK.ModificarFK(dependencia, nombreOperacion.trim());
+            }
+        
 
         if (creado) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Operación exitosa", "Los datos se han guardado correctamente.");

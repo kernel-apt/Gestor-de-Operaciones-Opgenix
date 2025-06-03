@@ -1,6 +1,5 @@
 package ConsultasSQL;
 
-import gestorDeOperaciones.GestorDeOperaciones;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,7 @@ public class ConsultaInstrucciones {
 
     public ConsultaInstrucciones(Connection con) {
         this.con = con;
-        
+
     }
     Alert alerta;
 
@@ -38,15 +37,13 @@ public class ConsultaInstrucciones {
         alerta.showAndWait();
     }
 
-    // Verifica si existe la tarea en la tabla 'tareas'
     private boolean existeTarea(String nombreTarea) {
         if (con != null) {
-            // Para mayor compatibilidad, quité LIMIT 1 y uso FETCH FIRST 1 ROW ONLY
             String sql = "SELECT 1 FROM tarea WHERE Nombre = ? FETCH FIRST 1 ROW ONLY";
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setString(1, nombreTarea);
                 try (ResultSet rs = ps.executeQuery()) {
-                    return rs.next(); // retorna true si existe
+                    return rs.next();
                 }
             } catch (SQLException e) {
                 mostrarAlerta(e, "Error al verificar la existencia de la tarea.");
@@ -55,7 +52,6 @@ public class ConsultaInstrucciones {
         return false;
     }
 
-    // Crear nueva instrucción asociada a una tarea (con validación previa)
     public boolean crearInstruccion(String nombreInstruccion, String nombreTarea) {
         if (con != null) {
             if (!existeTarea(nombreTarea)) {
@@ -64,20 +60,40 @@ public class ConsultaInstrucciones {
                 return false;
             }
 
-            String sql = "INSERT INTO instruccion (Nombre, nombreTarea, Estado) VALUES (?, ?, ?)";
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.setString(1, nombreInstruccion);
-                ps.setString(2, nombreTarea);
-                ps.setString(3, "No ejecutada");
-                return ps.executeUpdate() > 0;
-            } catch (SQLException e) {
-                mostrarAlerta(e, "No se pudo crear la instrucción.");
+            boolean yaExiste = instruccionExisteParaTarea(nombreInstruccion, nombreTarea);
+            if (!yaExiste) {
+                String sql = "INSERT INTO instruccion (Nombre, nombreTarea, Estado) VALUES (?, ?, ?)";
+                try (PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setString(1, nombreInstruccion);
+                    ps.setString(2, nombreTarea);
+                    ps.setString(3, "No ejecutada");
+                    return ps.executeUpdate() > 0;
+                } catch (SQLException e) {
+                    mostrarAlerta(e, "No se pudo crear la instrucción.");
+                }
             }
         }
         return false;
     }
 
-    // Cambiar estado de una instrucción por nombre
+    public boolean instruccionExisteParaTarea(String nombreInstruccion, String nombreTarea) {
+        String sql = "SELECT COUNT(*) FROM instruccion WHERE Nombre = ? AND nombreTarea = ?";
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, nombreInstruccion);
+            stmt.setString(2, nombreTarea);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar existencia de instrucción: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean cambiarEstadoInstruccion(String nombreInstruccion, String nuevoEstado) {
         if (con != null) {
             String sql = "UPDATE instruccion SET Estado = ? WHERE Nombre = ?";
@@ -91,8 +107,7 @@ public class ConsultaInstrucciones {
         }
         return false;
     }
-
-    // Cambiar estado por nombre de tarea e instrucción (con nombre de método más descriptivo)
+    
     public boolean cambiarEstadoInstruccionPorTarea(String tarea, String nombreInstruccion, String nuevoEstado) {
         if (con != null) {
             String sql = "UPDATE instruccion SET Estado = ? WHERE Nombre = ? AND nombreTarea = ?";
@@ -107,7 +122,6 @@ public class ConsultaInstrucciones {
         }
         return false;
     }
-// Verifica si una instrucción específica está completada
 
     public boolean estaInstruccionCompletada(String tarea, String instruccion) {
         if (con != null) {
@@ -127,7 +141,6 @@ public class ConsultaInstrucciones {
         return false;
     }
 
-    // Verifica si todas las instrucciones de una tarea están completadas
     public boolean estanTodasCompletadas(String tarea) {
         if (con != null) {
             String sql = "SELECT COUNT(*) FROM instruccion WHERE nombreTarea = ? AND Estado <> 'Completado'";
@@ -180,7 +193,6 @@ public class ConsultaInstrucciones {
         return 0;
     }
 
-    // Obtener lista de instrucciones asociadas a una tarea
     public List<String> instruccionesAsociadas(String tarea) {
         List<String> listaInstrucciones = new ArrayList<>();
         if (con != null) {
@@ -199,7 +211,6 @@ public class ConsultaInstrucciones {
         return listaInstrucciones;
     }
 
-    // Elimina todas las instrucciones asociadas a una tarea
     public boolean eliminarInstruccionesPorTarea(String tarea) {
         if (con != null) {
             String sql = "DELETE FROM instruccion WHERE nombreTarea = ?";

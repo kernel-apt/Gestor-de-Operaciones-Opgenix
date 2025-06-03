@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<SplitPane dividerPositions="0.5" prefHeight="566.0" prefWidth="957.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.VisorTareasController">
+<SplitPane dividerPositions="0.5" prefHeight="566.0" prefWidth="957.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controladores.EditorTareasController">
    <items>
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="501.0" prefWidth="175.0">
          <children>
