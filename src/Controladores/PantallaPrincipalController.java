@@ -412,7 +412,7 @@ public class PantallaPrincipalController {
 
     private void cargarOperacionesEnTabla() {
         filasOperaciones.clear();
-        fp_Gestor.getChildren().clear();
+       
 
         ConsultasOperaciones consultas = new ConsultasOperaciones(con);
         ArrayList<String[]> listaOperacion = consultas.ListaOperaciones();
@@ -473,7 +473,7 @@ public class PantallaPrincipalController {
     @FXML
     public void CheckBoxSelect(ActionEvent event) {
         CheckBox cb = (CheckBox) event.getSource();
-        String texto = cb.getId();  
+        String texto = cb.getId();
         boolean seleccionado = cb.isSelected();
 
         if (texto == null || !texto.contains("_")) {
@@ -499,22 +499,23 @@ public class PantallaPrincipalController {
             boolean exito = ins.cambiarEstadoInstruccionPorTarea(tareaId, instruccion, nuevoEstado);
             consultaTarea.ModificarEstado(tareaId, "En ejecucion");
             if (exito) {
-                if (seleccionado) {
+                if (exito) {
                     boolean todasInstruccionesCompletas = ins.estanTodasCompletadas(tareaId);
                     if (todasInstruccionesCompletas) {
-
                         consultaTarea.ModificarEstado(tareaId, "Finalizada");
-
-                        boolean todasTareasCompletas;
-                        ConsultasOperaciones consulta = new ConsultasOperaciones(con);
-                        boolean exitotareas = consultaTarea.estanTodasTareasFinalizadas(nombreOperacion);
-                        if (exitotareas) {
-                            consulta.actualizarEstadoOperacion(nombreOperacion, "Finalizada");
-                        }
-
+                    } else {
+                        consultaTarea.ModificarEstado(tareaId, "En ejecucion");
                     }
 
+                    ConsultasOperaciones consulta = new ConsultasOperaciones(con);
+                    boolean todasTareasFinalizadas = consultaTarea.estanTodasTareasFinalizadas(nombreOperacion);
+                    if (todasTareasFinalizadas) {
+                        consulta.actualizarEstadoOperacion(nombreOperacion, "Finalizada");
+                    } else {
+                        consulta.actualizarEstadoOperacion(nombreOperacion, "En ejecucion");
+                    }
                 }
+
             }
 
         } catch (Exception e) {
@@ -530,6 +531,7 @@ public class PantallaPrincipalController {
                 cargarGestor(nombreOperacion, false);
             }
         }
+        cargarOperacionesEnTabla();
 
     }
 
