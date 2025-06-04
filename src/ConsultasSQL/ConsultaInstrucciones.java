@@ -224,4 +224,20 @@ public class ConsultaInstrucciones {
         }
         return false;
     }
+    
+    
+    public boolean eliminarInstruccionEspecifica(String tarea, String instruccion) {
+        if (con != null) {
+            String sql = "DELETE FROM instruccion WHERE nombreTarea = ? AND Nombre = ?";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, tarea);
+                ps.setString(2, instruccion);
+                int filasEliminadas = ps.executeUpdate();
+                return filasEliminadas > 0;
+            } catch (SQLException e) {
+                mostrarAlerta(e, "No se pudieron eliminar las instrucciones de la tarea.");
+            }
+        }
+        return false;
+    }
 }

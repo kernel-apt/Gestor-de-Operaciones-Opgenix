@@ -114,6 +114,7 @@ public class GestorDeOperaciones extends Application {
             e.printStackTrace();
         }
     }
+    
 
     public static void main(String[] args) {
         launch(args);

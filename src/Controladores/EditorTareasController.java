@@ -173,6 +173,19 @@ void AgregarInstruccion(ActionEvent event) {
     void DescartarInstruccion(ActionEvent event) {
         FilaInstruccion seleccionado = tbv_Instrucciones.getSelectionModel().getSelectedItem();
         if (seleccionado != null) {
+             String nombreTarea = tf_NombreTarea.getText();
+             String nombreInstruccion = seleccionado.getInstruccion();
+             ConsultaInstrucciones consultaInstruccion = new ConsultaInstrucciones(con);
+             boolean existeInstruccion = consultaInstruccion.instruccionExisteParaTarea(nombreInstruccion, nombreTarea);
+             boolean eliminacionInstruccion= false;
+             if(existeInstruccion){
+                 eliminacionInstruccion = consultaInstruccion.eliminarInstruccionEspecifica(nombreTarea, nombreInstruccion);
+             }
+             if(eliminacionInstruccion){
+                 System.out.println("La instruccion fue eliminada de la base de datos");
+             } else{
+                 System.out.println("La instruccion no fue eliminada de la base de datos");
+             }
             filasInstruccion.remove(seleccionado);
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No hay ningún elemento seleccionado");
@@ -208,12 +221,8 @@ void AgregarInstruccion(ActionEvent event) {
 
         for (FilaInstruccion fila : filasInstruccion) {
             String nombreInstruccion = fila.getInstruccion();
-            boolean exitoInstruccion = consultaInstruccion.crearInstruccion(nombreInstruccion, nombreTarea);
-            if (!exitoInstruccion) {
-                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo guardar la instrucción: " + nombreInstruccion);
-                
-                return;
-            }
+            consultaInstruccion.crearInstruccion(nombreInstruccion, nombreTarea);
+            
         }
         
         Boolean creado = crearTarea.Modificar(tarea);
