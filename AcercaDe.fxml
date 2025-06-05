@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="416.0" prefWidth="662.0" style="-fx-background-color: #E3EAF2;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Button layoutX="526.0" layoutY="362.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="102.0" text="Regresar" textAlignment="JUSTIFY">
+         <effect>
+            <InnerShadow />
+         </effect>
+         <font>
+            <Font name="Comic Sans MS" size="16.0" />
+         </font></Button>
+   
+        <Label layoutX="14.0" layoutY="31.0" text="Gestor de Operaciones Opgenix" textAlignment="JUSTIFY" textFill="#1c37eb">
+            <font>
+                <Font name="Comic Sans MS" size="20.0" />
+            </font>
+         <effect>
+            <InnerShadow />
+         </effect>
+        </Label>
+
+        <Label layoutX="24.0" layoutY="89.0" text="Desarrollado por Code Solutions" textAlignment="JUSTIFY">
+         <effect>
+            <InnerShadow />
+         </effect>
+         <font>
+            <Font name="Comic Sans MS" size="16.0" />
+         </font></Label>
+
+        <Label layoutX="20.0" layoutY="120.0" prefHeight="157.0" prefWidth="260.0" text="• Cruz Sanchez Manuel&#10;• Rosa Isela Diaz Dorado&#10;• Sarai Zambrano Osorno&#10;• David Guzman Martinez&#10;• Kenya Rodriguez Mendieta&#10;" textAlignment="JUSTIFY">
+         <effect>
+            <InnerShadow />
+         </effect>
+         <font>
+            <Font name="Comic Sans MS" size="18.0" />
+         </font></Label>
+ 
+        <Label layoutX="20.0" layoutY="326.0" text="1er lanzamiento: 12/06/25" textAlignment="JUSTIFY" textFill="#1f1f1f">
+         <effect>
+            <InnerShadow />
+         </effect>
+         <font>
+            <Font name="Comic Sans MS" size="15.0" />
+         </font></Label>
+   
+        <Label layoutX="20.0" layoutY="291.0" text="codesolution@gmail.com" textAlignment="JUSTIFY">
+         <effect>
+            <InnerShadow />
+         </effect>
+         <font>
+            <Font name="Comic Sans MS" size="20.0" />
+         </font></Label>  
+        <Label layoutX="24.0" layoutY="360.0" text="© Version 1.0" textAlignment="JUSTIFY">
+         <effect>
+            <InnerShadow />
+         </effect>
+         <font>
+            <Font name="Comic Sans MS" size="15.0" />
+         </font></Label>
+      <ImageView fitHeight="276.0" fitWidth="363.0" layoutX="287.0" layoutY="72.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../../../Downloads/WhatsApp%20Image%202025-05-30%20at%2001.34.20.jpeg" />
+         </image>
+      </ImageView>
+    </children>
+   <effect>
+      <DropShadow />
+   </effect>
+</Pane>
